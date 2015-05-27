@@ -1,0 +1,51 @@
+package com.saxifrages.vess.h2.models;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.h2.engine.Session;
+import org.h2.result.Row;
+import org.h2.table.Column;
+import org.h2.value.Value;
+
+import com.essbase.api.base.EssException;
+import com.essbase.api.base.IEssIterator;
+import com.saxifrages.vess.h2.EssModel;
+import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
+import com.saxifrages.vess.h2.essresults.EssResultSet;
+
+public abstract class AbstractEssbaseModel implements EssModel {
+	
+	protected Column[] columns;
+	
+	public interface IterMapper<E> {
+		public void convert(E object, Value[] values) throws EssException;
+	}
+	
+	@Override
+	public Column[] getColumns() {
+		return columns;
+	}
+	
+	public int getColumnCount() {
+		return this.getColumns().length;
+	}
+	
+	@Override
+	public void addRealRow(Session session, Row row) throws SQLException {
+		// default implementation is to do nothing
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <E> EssResultSet mapper(IEssIterator iterator, IterMapper<E> mapper) throws EssException {
+		List<Row> rows = new ArrayList<Row>();
+		for (int i = 0; i < iterator.getCount(); i++) {
+			Value[] values = new Value[getColumnCount()];
+			mapper.convert((E) iterator.getAt(i), values);
+			rows.add(new Row(values, 0));
+		}
+		return new ArrayListEssResultSet(rows, getColumnCount());
+	}
+	
+}
