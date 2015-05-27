@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.h2.table.Column;
-import org.jaybase.core.JSubstitutionVariable;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
-import com.essbase.api.datasource.IEssOlapApplication;
 import com.essbase.api.datasource.IEssOlapServer;
 
 public class TempEssService implements EssService {
@@ -21,15 +19,15 @@ public class TempEssService implements EssService {
 	
 	@Override
 	public void addSubstitutionVariable(String name, String value) {
-		JSubstitutionVariable variable = new JSubstitutionVariable(name, value);
-		System.out.println("Addin substitution variable: " + variable);
+		//JSubstitutionVariable variable = new JSubstitutionVariable(name, value);
+		//System.out.println("Addin substitution variable: " + variable);
 		//variables.add(variable);
 	}
 
 	@Override
 	public void addSubstitutionVariable(String application, String database, String name, String value) {
-		JSubstitutionVariable variable = new JSubstitutionVariable(application, database, name, value);
-		System.out.println("Addin substitution variable: " + variable);
+		//JSubstitutionVariable variable = new JSubstitutionVariable(application, database, name, value);
+		//System.out.println("Addin substitution variable: " + variable);
 		//variables.add(variable);
 	}
 	

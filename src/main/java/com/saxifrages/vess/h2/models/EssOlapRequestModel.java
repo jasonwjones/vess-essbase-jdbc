@@ -6,7 +6,6 @@ import org.h2.value.Value;
 import org.h2.value.ValueString;
 
 import com.essbase.api.base.EssException;
-import com.essbase.api.datasource.IEssOlapRequest;
 import com.essbase.api.datasource.IEssOlapServer.IEssOlapConnectionInfo;
 import com.saxifrages.vess.h2.ColumnBuilder;
 import com.saxifrages.vess.h2.EssService;
@@ -20,12 +19,10 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
  */
 public class EssOlapRequestModel extends AbstractEssbaseModel {
 	
-	private EssService service;
-	
 	private static final SessionMapper SESSION_MAPPER = new SessionMapper();
 	
 	public EssOlapRequestModel(EssService service) {
-		this.service = service;
+		super(service);
 		columns = new ColumnBuilder()
 			.add(ColConstants.APPLICATION)
 			.add(ColConstants.CUBE)

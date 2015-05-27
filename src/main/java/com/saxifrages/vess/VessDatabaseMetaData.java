@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.saxifrages.vess.resultset.ResultSetBuilder;
 import com.saxifrages.vess.resultset.StringResultSet;
 
 public class VessDatabaseMetaData implements DatabaseMetaData {

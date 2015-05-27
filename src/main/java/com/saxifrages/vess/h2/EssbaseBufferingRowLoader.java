@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
 import com.essbase.api.datasource.IEssOlapServer;
 import com.essbase.api.session.IEssbase;

@@ -12,6 +12,7 @@ import org.h2.value.Value;
 import com.essbase.api.base.EssException;
 import com.essbase.api.base.IEssIterator;
 import com.saxifrages.vess.h2.EssModel;
+import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
 
@@ -19,8 +20,14 @@ public abstract class AbstractEssbaseModel implements EssModel {
 	
 	protected Column[] columns;
 	
+	protected EssService service;
+	
 	public interface IterMapper<E> {
 		public void convert(E object, Value[] values) throws EssException;
+	}
+	
+	public AbstractEssbaseModel(EssService service) {
+		this.service = service;
 	}
 	
 	@Override
@@ -47,5 +54,7 @@ public abstract class AbstractEssbaseModel implements EssModel {
 		}
 		return new ArrayListEssResultSet(rows, getColumnCount());
 	}
+	
+	// TODO: MAPPER WHERE WE DEFINE THE WHOLE RESULT SET
 	
 }

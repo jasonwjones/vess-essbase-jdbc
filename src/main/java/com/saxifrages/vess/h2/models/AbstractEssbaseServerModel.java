@@ -4,16 +4,13 @@ import java.sql.SQLException;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssOlapServer;
-import com.essbase.api.domain.IEssServer;
 import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
 
 public abstract class AbstractEssbaseServerModel extends AbstractEssbaseModel {
 
-	private EssService service;
-	
 	public AbstractEssbaseServerModel(EssService service) {
-		this.service = service;
+		super(service);
 	}
 	
 	@Override

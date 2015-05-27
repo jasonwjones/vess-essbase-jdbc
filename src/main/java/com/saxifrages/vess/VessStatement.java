@@ -7,7 +7,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.saxifrages.vess.resultset.StringResultSet;
 

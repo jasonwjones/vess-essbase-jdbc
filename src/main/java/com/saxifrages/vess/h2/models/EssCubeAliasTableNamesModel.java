@@ -18,14 +18,12 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
 
 public class EssCubeAliasTableNamesModel extends AbstractEssbaseReadOnlyModel {
 
-	private EssService service;
-
 	private String app;
 	
 	private String cube;
 	
 	public EssCubeAliasTableNamesModel(EssService service, String app, String cube) {
-		this.service = service;
+		super(service);
 		this.app = app;
 		this.cube = cube;
 		

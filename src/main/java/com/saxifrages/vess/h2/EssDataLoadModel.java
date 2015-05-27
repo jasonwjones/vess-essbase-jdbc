@@ -10,7 +10,6 @@ import org.h2.result.Row;
 import org.h2.table.Column;
 import org.h2.value.Value;
 
-import com.essbase.api.datasource.IEssCube;
 import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
 

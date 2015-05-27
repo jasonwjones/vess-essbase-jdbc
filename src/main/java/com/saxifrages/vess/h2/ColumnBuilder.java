@@ -26,6 +26,13 @@ public class ColumnBuilder {
 		return this;
 	}
 	
+	public ColumnBuilder addLong(String columnName) {
+		Column c = new Column(columnName, Value.LONG);
+		columns.add(c);
+		recent = c;
+		return this;
+	}
+	
 	public ColumnBuilder addColumn(String columnName) {
 		Column c = new Column(columnName, Value.STRING);
 		columns.add(c);

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.h2.table.Column;
-import org.jaybase.core.JSubstitutionVariable;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.base.IEssIterator;

@@ -1,6 +1,5 @@
 package com.saxifrages.vess.resultset;
 
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class SimpleResultSetMetaData extends AbstractResultSetMetaData {

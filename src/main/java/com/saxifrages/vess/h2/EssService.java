@@ -2,8 +2,6 @@ package com.saxifrages.vess.h2;
 
 import java.util.List;
 
-import org.jaybase.core.JSubstitutionVariable;
-
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
 import com.essbase.api.datasource.IEssOlapServer;

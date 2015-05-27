@@ -36,8 +36,11 @@ import com.saxifrages.vess.h2.EssTableFactory;
 import com.saxifrages.vess.h2.SimpleEssService;
 import com.saxifrages.vess.h2.essconn.EssConnectionManager;
 import com.saxifrages.vess.h2.models.EssCubeAliasTableNamesModel;
+import com.saxifrages.vess.h2.models.EssCubeInfoModel;
+import com.saxifrages.vess.h2.models.EssGenericPropsModel;
 import com.saxifrages.vess.h2.models.EssOlapRequestModel;
 import com.saxifrages.vess.h2.models.EssServerAppsModel;
+import com.saxifrages.vess.h2.models.EssServerUsersModel;
 import com.saxifrages.vess.h2.models.EssSubstitutionVariableModel;
 import com.saxifrages.vess.util.EssbaseUrl;
 
@@ -125,6 +128,18 @@ public class VessConnection implements Connection {
 				EssServerAppsModel appsModel = new EssServerAppsModel(service);
 				EssTable appsTable = tableFactory.createTable(appsModel, "APPLICATIONS");
 				database.addSchemaObject(session, appsTable);
+				
+				EssServerUsersModel usersModel = new EssServerUsersModel(service);
+				EssTable usersTable = tableFactory.createTable(usersModel, "USERS");
+				database.addSchemaObject(session, usersTable);
+				
+				EssGenericPropsModel serverPropsModel = new EssGenericPropsModel(service);
+				EssTable genericPropsTable = tableFactory.createTable(serverPropsModel, "TEST_PROPS");
+				database.addSchemaObject(session, genericPropsTable);
+				
+				EssCubeInfoModel cubeInfoModel = new EssCubeInfoModel(service);
+				EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES");
+				database.addSchemaObject(session, cubeInfoTable);
 				
 				try {
 					EssModel dataLoadModel = service.createCubeModel(essUrl.getApplication(), essUrl.getDatabase());

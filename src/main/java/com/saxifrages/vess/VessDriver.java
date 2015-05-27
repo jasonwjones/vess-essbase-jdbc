@@ -8,8 +8,6 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.h2.engine.Constants;
-
 import com.saxifrages.vess.h2vess.VessConnection;
 import com.saxifrages.vess.util.EssbaseUrl;
 

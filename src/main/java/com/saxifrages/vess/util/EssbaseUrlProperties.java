@@ -3,8 +3,6 @@ package com.saxifrages.vess.util;
 import java.util.Properties;
 import java.util.Set;
 
-import org.h2.engine.FunctionAlias;
-
 public class EssbaseUrlProperties {
 	
 	/**
