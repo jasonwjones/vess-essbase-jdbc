@@ -172,5 +172,10 @@ public class SimpleEssService implements EssService {
 		}
 		
 	}
+
+	@Override
+	public IEssOlapServer getServer() throws EssException {
+		return server;
+	}
 	
 }

@@ -9,6 +9,7 @@ import org.jaybase.core.JSubstitutionVariable;
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
 import com.essbase.api.datasource.IEssOlapApplication;
+import com.essbase.api.datasource.IEssOlapServer;
 
 public class TempEssService implements EssService {
 
@@ -82,6 +83,11 @@ public class TempEssService implements EssService {
 	@Override
 	public IEssCube getCube(String application, String cube) throws EssException {
 		return null;
+	}
+
+	@Override
+	public IEssOlapServer getServer() throws EssException {
+		throw new RuntimeException("getServer() unimplemented");
 	}
 	
 }

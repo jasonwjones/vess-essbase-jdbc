@@ -36,6 +36,8 @@ import com.saxifrages.vess.h2.EssTableFactory;
 import com.saxifrages.vess.h2.SimpleEssService;
 import com.saxifrages.vess.h2.essconn.EssConnectionManager;
 import com.saxifrages.vess.h2.models.EssCubeAliasTableNamesModel;
+import com.saxifrages.vess.h2.models.EssOlapRequestModel;
+import com.saxifrages.vess.h2.models.EssServerAppsModel;
 import com.saxifrages.vess.h2.models.EssSubstitutionVariableModel;
 import com.saxifrages.vess.util.EssbaseUrl;
 
@@ -116,6 +118,14 @@ public class VessConnection implements Connection {
 				EssTable aliasTableTable = tableFactory.createTable(aliasTableModel, app + "_" + db + "_ALIAS_TABLES");
 				database.addSchemaObject(session, aliasTableTable);
 				
+				EssOlapRequestModel requestModel = new EssOlapRequestModel(service);
+				EssTable requestTable = tableFactory.createTable(requestModel, "REQUESTS");
+				database.addSchemaObject(session, requestTable);
+				
+				EssServerAppsModel appsModel = new EssServerAppsModel(service);
+				EssTable appsTable = tableFactory.createTable(appsModel, "APPLICATIONS");
+				database.addSchemaObject(session, appsTable);
+				
 				try {
 					EssModel dataLoadModel = service.createCubeModel(essUrl.getApplication(), essUrl.getDatabase());
 					EssTable sampleFact = tableFactory.createTable(dataLoadModel, appDb);
@@ -125,12 +135,7 @@ public class VessConnection implements Connection {
 					throw new SQLException("Essbase exception: " + e.getMessage(), e);
 				}
 			}
-			
-			Schema vessSchema = database.findSchema(schema.getName());
-			//Table dataTable = vessSchema.findTableOrView(session, "VARS")
-			
-			//if (database.find)
-			
+						
 			h2Connection = new JdbcConnection(session, "sa", "foo");
 			//h2Connection = new JdbcConnection(connInfo, true);
 		} catch (EssException e) {

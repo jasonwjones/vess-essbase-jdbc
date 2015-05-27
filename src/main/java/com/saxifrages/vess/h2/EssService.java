@@ -6,6 +6,7 @@ import org.jaybase.core.JSubstitutionVariable;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
+import com.essbase.api.datasource.IEssOlapServer;
 
 public interface EssService {
 
@@ -26,6 +27,8 @@ public interface EssService {
 	public List<String> getDimensions(String application, String cube) throws EssException;
 	
 	public IEssCube getCube(String application, String cube) throws EssException;
+	
+	public IEssOlapServer getServer() throws EssException;
 	
 	//public void loadData()
 	

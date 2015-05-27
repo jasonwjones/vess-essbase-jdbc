@@ -41,6 +41,13 @@ public class ColumnBuilder {
 		return this;
 	}
 
+	public ColumnBuilder addBoolean(String columnName) {
+		Column c = new Column(columnName, Value.BOOLEAN);
+		columns.add(c);
+		recent = c;
+		return this;
+	}
+	
 	public ColumnBuilder addString(String columnName) {
 		Column c = new Column(columnName.toUpperCase(), Value.STRING);
 		columns.add(c);

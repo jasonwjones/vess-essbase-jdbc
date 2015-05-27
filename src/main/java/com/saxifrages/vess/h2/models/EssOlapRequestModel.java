@@ -1,21 +1,15 @@
 package com.saxifrages.vess.h2.models;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.h2.engine.Session;
-import org.h2.result.Row;
-import org.h2.table.Column;
 import org.h2.value.Value;
 import org.h2.value.ValueString;
 
 import com.essbase.api.base.EssException;
-import com.essbase.api.base.IEssIterator;
 import com.essbase.api.datasource.IEssOlapRequest;
-import com.essbase.api.datasource.IEssOlapServer;
+import com.essbase.api.datasource.IEssOlapServer.IEssOlapConnectionInfo;
 import com.saxifrages.vess.h2.ColumnBuilder;
-import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
+import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
 
 /**
@@ -25,15 +19,18 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
  *
  */
 public class EssOlapRequestModel extends AbstractEssbaseModel {
-
-	private IEssOlapServer server;
 	
-	public EssOlapRequestModel() {
+	private EssService service;
+	
+	private static final SessionMapper SESSION_MAPPER = new SessionMapper();
+	
+	public EssOlapRequestModel(EssService service) {
+		this.service = service;
 		columns = new ColumnBuilder()
 			.add(ColConstants.APPLICATION)
 			.add(ColConstants.CUBE)
 			.addColumn("USER_NAME")
-			.addColumn("REQUEST_SOURCE")
+			.addColumn("LOGIN_TIME")
 			.build();
 	}
 
@@ -47,21 +44,21 @@ public class EssOlapRequestModel extends AbstractEssbaseModel {
 	@Override
 	public EssResultSet get() throws SQLException {
 		try {
-			return mapper(server.getRequests(null, null, null), new OlapRequestMapper());
+			//System.out.println("FOUND SESSION COUNT: " + service.getServer().getConnections().getCount());
+			return mapper(service.getServer().getConnections(), SESSION_MAPPER);
 		} catch (EssException e) {
 			throw new SQLException("Problem retrieving sessions/requests from Essbase server", e);
 		}
 	}
-
-	// user, app, cube; all can be null (no filtering)
-	public static class OlapRequestMapper implements IterMapper<IEssOlapRequest> {
+	
+	public static class SessionMapper implements IterMapper<IEssOlapConnectionInfo> {
 		@Override
-		public void convert(IEssOlapRequest request, Value[] values) throws EssException {
-			values[0] = ValueString.get(request.getOlapApplicationName());
-			values[1] = ValueString.get(request.getCubeName());
-			values[2] = ValueString.get(request.getUserName());
-			values[3] = ValueString.get(request.getRequestSource());
+		public void convert(IEssOlapConnectionInfo request, Value[] values) throws EssException {
+			values[0] = ValueString.get(request.getConnectedApplicationName());
+			values[1] = ValueString.get(request.getConnectedCubeName());
+			values[2] = ValueString.get(request.getConnectedUserName());
+			values[3] = ValueString.get(request.getConnectedLoginTime());
 		}
 	}
-		
+	
 }
