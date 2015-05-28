@@ -79,9 +79,7 @@ public class VessConnection implements Connection {
 			SimpleEssService service = new SimpleEssService(server);
 			connInfo = new ConnectionInfo("jdbc:h2:mem:vess", info);
 			Engine engine = Engine.getInstance();
-			
 
-			//
 			Session session = engine.createSession(connInfo);
 //			System.out.println("Autocommit: " + session.getAutoCommit());
 			//Prepared drop = session.prepare("DROP SCHEMA IF EXISTS VESS_SCHEMA");
@@ -90,7 +88,6 @@ public class VessConnection implements Connection {
 			//session.commit(true);
 			//ResultInterface result = drop.equals(obj)
 			
-
 			Database database = session.getDatabase();
 			// EssService service = new TempEssService();
 			// EssService service = new SimpleEssService();

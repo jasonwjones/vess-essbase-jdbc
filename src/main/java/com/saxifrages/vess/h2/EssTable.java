@@ -151,6 +151,7 @@ public class EssTable extends Table {
     
 	@Override
 	public ArrayList<Index> getIndexes() {
+		System.out.println("EssTable.getIndexes()");
 		return indexes;
 	}
 

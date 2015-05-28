@@ -19,6 +19,8 @@ public class EssServerUsersModel extends AbstractEssbaseServerModel {
 		super(service);
 		columns = new ColumnBuilder()
 				.addString("USER_NAME")
+				.key()
+				.notNullable()
 				.addLong("LAST_LOGIN_DATE")
 				.build();
 	}

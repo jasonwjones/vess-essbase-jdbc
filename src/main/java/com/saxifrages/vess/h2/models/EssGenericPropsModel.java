@@ -27,7 +27,7 @@ public class EssGenericPropsModel extends AbstractEssbaseServerModel {
 	@Override
 	protected EssResultSet get(IEssOlapServer server) throws EssException {
 		String[] propNames = server.getPropertyNames();
-
+		
 		List<Row> rows = new ArrayList<Row>();
 		for (String aliasTableName : propNames) {
 			Value[] var = new Value[1];

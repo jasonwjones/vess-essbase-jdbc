@@ -40,6 +40,11 @@ public class ColumnBuilder {
 		return this;
 	}
 	
+	public ColumnBuilder key() {
+		recent.setPrimaryKey(true);
+		return this;
+	}
+	
 	public ColumnBuilder addString(String columnName, int length) {
 		Column c = new Column(columnName, Value.STRING);
 		c.setPrecision(length);

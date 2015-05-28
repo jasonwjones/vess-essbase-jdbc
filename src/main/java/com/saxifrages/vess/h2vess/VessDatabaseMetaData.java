@@ -558,6 +558,7 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 	}
 
 	public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
+		System.out.println("VESS getPrimaryKeys()");
 		return h2.getPrimaryKeys(catalog, schema, table);
 	}
 

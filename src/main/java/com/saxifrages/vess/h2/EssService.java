@@ -33,12 +33,12 @@ public interface EssService {
 	/**
 	 * Dynamically create a data model of an Essbase cube.
 	 * 
-	 * @param application
-	 * @param database
+	 * @param application the Essbase application
+	 * @param database the Essbase cube
 	 * @return
 	 */
 	public EssModel createCubeModel(String application, String database) throws EssException;
-
+	
 	/**
 	 * Create a model for a particular dimension of a cube.
 	 * 

@@ -20,13 +20,13 @@ import com.saxifrages.essbase.util.IteratorUtil;
 public class SimpleEssService implements EssService {
 
 	private IEssOlapServer server;
-	
+
 	private static ConversionDelegate<IEssOlapApplication, String> APP_TO_NAME = new AppToName();
-	
+
 	private static ConversionDelegate<IEssCube, String> CUBE_NAME = new CubeNames();
-	
+
 	private static ConversionDelegate<IEssDimension, String> DIM_NAMES = new DimNames();
-	
+
 	public SimpleEssService(IEssOlapServer server) {
 		this.server = server;
 	}
@@ -81,20 +81,34 @@ public class SimpleEssService implements EssService {
 		IEssIterator dimIterator = cube.getDimensions();
 		return IteratorUtil.iteratorToList(dimIterator, DIM_NAMES);
 	}
-	
+
 	@Override
 	public EssModel createCubeModel(String application, String database) throws EssException {
 		List<String> dimensionNames = getStoredDimensions(application, database);
 		ColumnBuilder builder = new ColumnBuilder();
 		for (String dimName : dimensionNames) {
 			builder
-				.addString(dimName, EssService.MAX_MEMBER_NAME_LENGTH)
-				.notNullable();
+					.addString(dimName, EssService.MAX_MEMBER_NAME_LENGTH)
+					.notNullable();
 		}
 		Column[] columns = builder
-			.addDouble("DATA")
-			.build();
+				.addDouble("DATA")
+				.build();
 		return new EssDataLoadModel(columns, this, application, database);
+	}
+
+	/**
+	 * Creates a rejected record model for a given cube (set of dimensionality).
+	 * The format of the table is as follows:
+	 * 
+	 * dimension names, fact, rejection reason (varchar)
+	 * 
+	 * @param dimensionNames
+	 * @return
+	 */
+	public EssModel createCubeRejectedDataModel(List<String> dimensionNames) {
+
+		return null;
 	}
 
 	@Override
@@ -108,29 +122,29 @@ public class SimpleEssService implements EssService {
 		IEssIterator dimensionIterator = outline.getDimensions();
 
 		List<String> storedDimNames = new ArrayList<String>();
-		
+
 		for (int i = 0; i < dimensionIterator.getCount(); i++) {
 			IEssDimension dimension = (IEssDimension) dimensionIterator.getAt(i);
 
 			if (dimension.getCategory() != EEssDimensionCategory.ATTRIBUTE
 					&& dimension.getCategory() != EEssDimensionCategory.ATTRIBUTE_CALC) {
-					storedDimNames.add(dimension.getName());
+				storedDimNames.add(dimension.getName());
 			}
 		}
 		return storedDimNames;
 	}
-	
+
 	public IEssCube getCube(String application, String cube) throws EssException {
 		return server.getApplication(application).getCube(cube);
 	}
-	
+
 	private static class AppToName implements ConversionDelegate<IEssOlapApplication, String> {
 		@Override
 		public String convert(IEssOlapApplication from) throws EssException {
 			return from.getName();
 		}
 	}
-	
+
 	private static class CubeNames implements ConversionDelegate<IEssCube, String> {
 		@Override
 		public String convert(IEssCube from) throws EssException {
@@ -141,40 +155,41 @@ public class SimpleEssService implements EssService {
 	private static class DimNames implements ConversionDelegate<IEssDimension, String> {
 		@Override
 		public String convert(IEssDimension dimension) throws EssException {
-//			if (dimension.getCategory() != EEssDimensionCategory.ATTRIBUTE
-//					&& dimension.getCategory() != EEssDimensionCategory.ATTRIBUTE_CALC) {
-				return dimension.getName();
-//			} else {
-//				return null;
-//			}
+			// if (dimension.getCategory() != EEssDimensionCategory.ATTRIBUTE
+			// && dimension.getCategory() !=
+			// EEssDimensionCategory.ATTRIBUTE_CALC) {
+			return dimension.getName();
+			// } else {
+			// return null;
+			// }
 		}
 	}
-	
+
 	public static void main(String[] args) throws EssException {
 		IEssbase essbase = IEssbase.Home.create(IEssbase.JAPI_VERSION);
-		IEssOlapServer server = essbase.signOn("admin", "Way2GoGuys", false, null, "embedded", "192.168.1.231");		
+		IEssOlapServer server = essbase.signOn("admin", "Way2GoGuys", false, null, "embedded", "192.168.1.231");
 		SimpleEssService service = new SimpleEssService(server);
-		
+
 		String[][] vars = server.getSubstitutionVariables();
 		System.out.println("Vars: " + vars.length);
-		
+
 		List<String> apps = service.getApplications();
 		for (String app : apps) {
 			System.out.println("App: " + app);
 		}
-				
+
 		for (String app : apps) {
 			List<String> cubes = service.getCubes(app);
 			for (String cube : cubes) {
 				System.out.println("Cube: " + cube);
 			}
 		}
-		
+
 	}
 
 	@Override
 	public IEssOlapServer getServer() throws EssException {
 		return server;
 	}
-	
+
 }

@@ -26,6 +26,10 @@ public abstract class AbstractEssbaseModel implements EssModel {
 		public void convert(E object, Value[] values) throws EssException;
 	}
 	
+	public interface ArrayMapper<E> {
+		public void convert(E[] objects, Value[] values) throws EssException;
+	}
+	
 	public AbstractEssbaseModel(EssService service) {
 		this.service = service;
 	}
@@ -54,6 +58,9 @@ public abstract class AbstractEssbaseModel implements EssModel {
 		}
 		return new ArrayListEssResultSet(rows, getColumnCount());
 	}
+	
+//	public <E> EssResultSet mapperCustom(IEssIterator iterator, IterMapper<E> mapper) throws EssException {
+//	}
 	
 	// TODO: MAPPER WHERE WE DEFINE THE WHOLE RESULT SET
 	

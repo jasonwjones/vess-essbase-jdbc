@@ -8,6 +8,7 @@ import org.h2.value.ValueString;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
+import com.essbase.api.datasource.IEssOlapServer;
 import com.essbase.api.metadata.IEssDimension;
 import com.saxifrages.vess.h2.ColumnBuilder;
 import com.saxifrages.vess.h2.EssService;
@@ -19,7 +20,7 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
  * @author jasonwjones
  *
  */
-public class EssCubeStatsModel extends AbstractEssbaseCubeReadOnlyModel {
+public class EssCubeStatsModel extends AbstractEssbaseServerModel {
 
 	//private IEssOlapServer server;
 	
@@ -34,28 +35,10 @@ public class EssCubeStatsModel extends AbstractEssbaseCubeReadOnlyModel {
 			.addInteger("ACTUAL_SIZE")
 			.build();
 	}
-
-	public void fetch(IEssCube cube) throws EssException {
-		
-
-		//cube.getDimensions()
-		//cube.getDimension(null).getStorageType().
-	}
 	
 	@Override
 	public void endDataLoad() {
 		// do nothing
-	}
-
-	// TODO: Could abstract an Essbase class above this and below the current
-	// parent and have it wrap EssExceptions for us to clean this up a little
-	@Override
-	public EssResultSet get() throws SQLException {
-		try {
-			return mapper(service.getServer().getRequests(null, null, null), DIMENSION_MAPPER);
-		} catch (EssException e) {
-			throw new SQLException("Problem retrieving sessions/requests from Essbase server", e);
-		}
 	}
 		
 	public static class DimensionMapper implements IterMapper<IEssDimension> {
@@ -66,6 +49,11 @@ public class EssCubeStatsModel extends AbstractEssbaseCubeReadOnlyModel {
 			values[2] = ValueInt.get(dimension.getDeclaredSize());
 			values[3] = ValueInt.get(dimension.getActualSize());
 		}
+	}
+
+	@Override
+	protected EssResultSet get(IEssOlapServer server) throws EssException {
+		return mapper(server.getRequests(null, null, null), DIMENSION_MAPPER);
 	}
 	
 }
