@@ -11,7 +11,7 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
 public interface EssModel {
 
 	public Column[] getColumns();
-
+	
 	public void addRealRow(Session session, Row row) throws SQLException;
 
 	public void endDataLoad();

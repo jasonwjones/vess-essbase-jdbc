@@ -62,6 +62,7 @@ public class ColumnBuilder {
 	
 	public ColumnBuilder addString(String columnName) {
 		Column c = new Column(columnName.toUpperCase(), Value.STRING);
+		// c.setPrecision(defaultStringLength); ??
 		columns.add(c);
 		recent = c;
 		return this;

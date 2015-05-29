@@ -4,15 +4,13 @@ import org.h2.schema.Schema;
 
 public class EssTableFactory {
 
-	private Schema schema;
 	private int startId;
 	
-	public EssTableFactory(Schema schema, int startId) {
-		this.schema = schema;
+	public EssTableFactory(int startId) {
 		this.startId = startId;
 	}
 	
-	public EssTable createTable(EssModel model, String tableName) {
+	public EssTable createTable(EssModel model, String tableName, Schema schema) {
 		EssTable table = new EssTable(schema, startId++, tableName, model);
 		return table;
 	}

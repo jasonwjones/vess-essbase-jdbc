@@ -3,19 +3,14 @@ package com.saxifrages.vess.h2.models;
 import org.h2.value.Value;
 import org.h2.value.ValueBoolean;
 import org.h2.value.ValueInt;
-import org.h2.value.ValueLong;
 import org.h2.value.ValueString;
 
 import com.essbase.api.base.EssException;
-import com.essbase.api.dataquery.IEssDrillThrough;
-import com.essbase.api.dataquery.IEssDrillThroughReport;
 import com.essbase.api.dataquery.IEssURLDrillThrough;
 import com.essbase.api.datasource.IEssCube;
-import com.essbase.api.datasource.IEssOlapUser;
 import com.saxifrages.vess.h2.ColumnBuilder;
 import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
-import com.saxifrages.vess.h2.models.AbstractEssbaseModel.IterMapper;
 
 public class EssCubeDrillthroughModel extends AbstractEssbaseCubeReadOnlyModel {
 

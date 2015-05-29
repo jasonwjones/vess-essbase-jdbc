@@ -3,11 +3,13 @@ package com.saxifrages.vess;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import com.jasonwjones.jolo.ResultSetTablePrinter;
 import com.saxifrages.vess.h2vess.VessConnection;
 import com.saxifrages.vess.util.EssbaseUrl;
 
@@ -49,13 +51,27 @@ public class VessDriver implements Driver {
 		EssbaseUrl essUrl = EssbaseUrl.parse(url);
 
 		VessConnection conn = new VessConnection(essUrl, props);
-		conn.close();
+		
+		ResultSet rs = conn.getMetaData().getPrimaryKeys(null, null, "USERS");
+		ResultSetTablePrinter printer = new ResultSetTablePrinter();
+		
+		printer.printResultSet(rs);
+		
+		printer.printResultSet(conn.getMetaData().getTables(null, null, null, null));
+		
+		printer.printResultSet(conn.getMetaData().getIndexInfo(null, null, "USERS", false, true));
+		
+		System.out.println("# SCHEMAS");
+		printer.printResultSet(conn.getMetaData().getSchemas());
+		//conn.close();
 		
 		conn = null;
 		System.out.println("Signed off one");
+
 		
-		VessConnection conn2 = new VessConnection(essUrl, props);
-		conn2.close();
+		
+//		VessConnection conn2 = new VessConnection(essUrl, props);
+//		conn2.close();
 		
 
 		

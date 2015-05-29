@@ -1,13 +1,10 @@
 package com.saxifrages.vess.h2.models;
 
-import java.sql.SQLException;
-
 import org.h2.value.Value;
 import org.h2.value.ValueInt;
 import org.h2.value.ValueString;
 
 import com.essbase.api.base.EssException;
-import com.essbase.api.datasource.IEssCube;
 import com.essbase.api.datasource.IEssOlapServer;
 import com.essbase.api.metadata.IEssDimension;
 import com.saxifrages.vess.h2.ColumnBuilder;

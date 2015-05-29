@@ -28,6 +28,7 @@ public class EssOlapRequestModel extends AbstractEssbaseModel {
 			.add(ColConstants.CUBE)
 			.addColumn("USER_NAME")
 			.addColumn("LOGIN_TIME")
+			.addString("CONNECT_TIME")
 			.build();
 	}
 
@@ -55,6 +56,7 @@ public class EssOlapRequestModel extends AbstractEssbaseModel {
 			values[1] = ValueString.get(request.getConnectedCubeName());
 			values[2] = ValueString.get(request.getConnectedUserName());
 			values[3] = ValueString.get(request.getConnectedLoginTime());
+			values[4] = ValueString.get(request.getDatabaseConnectTime());
 		}
 	}
 	

@@ -29,7 +29,12 @@ public class EssIndex extends BaseIndex {
 	// IndexType indexType)
 
 	public EssIndex(EssTable table, int id, IndexColumn[] columns, IndexType type) {
-		initBaseIndex(table, id, null, columns, indexType);
+		initBaseIndex(table, id, null, columns, type);
+		essTable = table;
+	}
+
+	public EssIndex(EssTable table, int id, String name, IndexColumn[] columns, IndexType type) {
+		initBaseIndex(table, id, name, columns, type);
 		essTable = table;
 	}
 
@@ -38,7 +43,7 @@ public class EssIndex extends BaseIndex {
 	 */
 	@Override
 	public String getCreateSQL() {
-		return null;
+		return "EssIndex create SQL";
 	}
 
 	/**
@@ -77,6 +82,29 @@ public class EssIndex extends BaseIndex {
 		System.out.println("Index cost");
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	
+	
+	@Override
+	public IndexColumn[] getIndexColumns() {
+		System.out.println("EssIndex getIndexColumns()");
+		// TODO Auto-generated method stub
+		return super.getIndexColumns();
+	}
+
+	@Override
+	public IndexType getIndexType() {
+		System.out.println("EssIndex getIndexType()");
+		// TODO Auto-generated method stub
+		return super.getIndexType();
+	}
+
+	@Override
+	public boolean isRowIdIndex() {
+		System.out.println("EssIndex isRowIdIndex()");
+		// TODO Auto-generated method stub
+		return super.isRowIdIndex();
 	}
 
 	/**

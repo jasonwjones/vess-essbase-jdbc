@@ -558,7 +558,7 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 	}
 
 	public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
-		System.out.println("VESS getPrimaryKeys()");
+		System.out.println("VessDatabaseMetaData getPrimaryKeys()");
 		return h2.getPrimaryKeys(catalog, schema, table);
 	}
 
@@ -582,6 +582,7 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 
 	public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate)
 			throws SQLException {
+		System.out.println("VessDatabaseMetaData getIndexInfo(...)");
 		return h2.getIndexInfo(catalog, schema, table, unique, approximate);
 	}
 

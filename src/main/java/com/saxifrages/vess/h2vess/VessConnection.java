@@ -30,6 +30,7 @@ import org.h2.schema.Schema;
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssOlapServer;
 import com.essbase.api.session.EssbaseProperties;
+import com.saxifrages.vess.essbuilder.EssBuilder;
 import com.saxifrages.vess.h2.EssModel;
 import com.saxifrages.vess.h2.EssTable;
 import com.saxifrages.vess.h2.EssTableFactory;
@@ -49,45 +50,46 @@ public class VessConnection implements Connection {
 	private IEssOlapServer server;
 
 	private JdbcConnection h2Connection;
-	
+
 	private Properties info;
-	
+
 	private ConnectionInfo connInfo;
-	
+
 	public VessConnection(EssbaseUrl essUrl, Properties info) throws SQLException {
 		try {
 			this.info = info;
 			String username = info.getProperty("user");
 			String password = info.getProperty("password");
-			
-			//System.setProperty("ESS_ES_HOME", "/Users/jasonwjones/test");
-			
+
+			// System.setProperty("ESS_ES_HOME", "/Users/jasonwjones/test");
+
 			System.out.println("Using server class loader: " + EssbaseProperties.useServerClassLoader());
-			
+
 			System.out.println("Initializing Essbase Java API");
-			
+
 			EssConnectionManager connManager = EssConnectionManager.getInstance();
-						
+
 			System.out.println("Connecting to URL: " + essUrl);
-			
+
 			server = connManager.getServer(essUrl.getHostname(), username, password);
-			
+
 			System.out.println("Signing on to " + essUrl.getHostname() + " using " + username + "/" + password);
-			
 			System.out.println("Is connected: " + server.isConnected());
-			System.out.println("Is connected: " + server.isConnected());
+
 			SimpleEssService service = new SimpleEssService(server);
 			connInfo = new ConnectionInfo("jdbc:h2:mem:vess", info);
 			Engine engine = Engine.getInstance();
 
 			Session session = engine.createSession(connInfo);
-//			System.out.println("Autocommit: " + session.getAutoCommit());
-			//Prepared drop = session.prepare("DROP SCHEMA IF EXISTS VESS_SCHEMA");
-//			Command dropSchema = session.prepareLocal("DROP SCHEMA IF EXISTS VESS_SCHEMA");
-//			dropSchema.executeUpdate();
-			//session.commit(true);
-			//ResultInterface result = drop.equals(obj)
-			
+			// System.out.println("Autocommit: " + session.getAutoCommit());
+			// Prepared drop =
+			// session.prepare("DROP SCHEMA IF EXISTS VESS_SCHEMA");
+			// Command dropSchema =
+			// session.prepareLocal("DROP SCHEMA IF EXISTS VESS_SCHEMA");
+			// dropSchema.executeUpdate();
+			// session.commit(true);
+			// ResultInterface result = drop.equals(obj)
+
 			Database database = session.getDatabase();
 			// EssService service = new TempEssService();
 			// EssService service = new SimpleEssService();
@@ -95,11 +97,10 @@ public class VessConnection implements Connection {
 			User user = new User(database, 1000, "ESSADMIN", true);
 			user.setSaltAndHash(new byte[] { 8, 2 }, new byte[] { 1, 7 });
 			Schema schema = new Schema(database, 1001, "VESS_SCHEMA", user, false);
-			EssTableFactory tableFactory = new EssTableFactory(schema, 2000);
+			EssTableFactory tableFactory = new EssTableFactory(2000);
 			EssSubstitutionVariableModel variableModel = new EssSubstitutionVariableModel();
 			variableModel.setService(service);
 
-			
 			if (database.findUser(user.getName()) == null) {
 				database.addDatabaseObject(session, user);
 			}
@@ -107,49 +108,61 @@ public class VessConnection implements Connection {
 			String app = essUrl.getApplication().toUpperCase();
 			String db = essUrl.getDatabase().toUpperCase();
 			String appDb = app + "_" + db + "_DATA";
+
+			EssBuilder essBuilder = new EssBuilder(service, session, tableFactory, database);
+			Schema sampleSchema = new Schema(database, 3001, "SAMPLE", user, false);
+			if (database.findSchema(sampleSchema.getName()) == null) {
+				System.out.println("Adding Sample");
+				database.addDatabaseObject(session, sampleSchema);
+				essBuilder.buildApplicationSchema(sampleSchema, "Sample");
+			}
+			
+			///////////
 			
 			if (database.findSchema(schema.getName()) == null) {
 				database.addDatabaseObject(session, schema);
-			
-				EssTable variableTable = tableFactory.createTable(variableModel, "VARS");
+
+				EssTable variableTable = tableFactory.createTable(variableModel, "VARS", schema);
 				database.addSchemaObject(session, variableTable);
-	
+
 				EssCubeAliasTableNamesModel aliasTableModel = new EssCubeAliasTableNamesModel(service, app, db);
-				EssTable aliasTableTable = tableFactory.createTable(aliasTableModel, app + "_" + db + "_ALIAS_TABLES");
+				EssTable aliasTableTable = tableFactory.createTable(aliasTableModel, app + "_" + db + "_ALIAS_TABLES", schema);
 				database.addSchemaObject(session, aliasTableTable);
-				
+
 				EssOlapRequestModel requestModel = new EssOlapRequestModel(service);
-				EssTable requestTable = tableFactory.createTable(requestModel, "REQUESTS");
+				EssTable requestTable = tableFactory.createTable(requestModel, "REQUESTS", schema);
 				database.addSchemaObject(session, requestTable);
-				
+
 				EssServerAppsModel appsModel = new EssServerAppsModel(service);
-				EssTable appsTable = tableFactory.createTable(appsModel, "APPLICATIONS");
+				EssTable appsTable = tableFactory.createTable(appsModel, "APPLICATIONS", schema);
 				database.addSchemaObject(session, appsTable);
-				
+
 				EssServerUsersModel usersModel = new EssServerUsersModel(service);
-				EssTable usersTable = tableFactory.createTable(usersModel, "USERS");
+				EssTable usersTable = tableFactory.createTable(usersModel, "USERS", schema);
+				
 				database.addSchemaObject(session, usersTable);
-				
+				//database.addSchemaObject(session, usersTable.getPrimaryKey());
+
 				EssGenericPropsModel serverPropsModel = new EssGenericPropsModel(service);
-				EssTable genericPropsTable = tableFactory.createTable(serverPropsModel, "TEST_PROPS");
+				EssTable genericPropsTable = tableFactory.createTable(serverPropsModel, "TEST_PROPS", schema);
 				database.addSchemaObject(session, genericPropsTable);
-				
+
 				EssCubeInfoModel cubeInfoModel = new EssCubeInfoModel(service);
-				EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES");
+				EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES", schema);
 				database.addSchemaObject(session, cubeInfoTable);
-				
+
 				try {
 					EssModel dataLoadModel = service.createCubeModel(essUrl.getApplication(), essUrl.getDatabase());
-					EssTable sampleFact = tableFactory.createTable(dataLoadModel, appDb);
+					EssTable sampleFact = tableFactory.createTable(dataLoadModel, appDb, schema);
 					database.addSchemaObject(session, sampleFact);
 
 				} catch (EssException e) {
 					throw new SQLException("Essbase exception: " + e.getMessage(), e);
 				}
 			}
-						
+
 			h2Connection = new JdbcConnection(session, "sa", "foo");
-			//h2Connection = new JdbcConnection(connInfo, true);
+			// h2Connection = new JdbcConnection(connInfo, true);
 		} catch (EssException e) {
 			throw new SQLException("Error connecting to Essbase: " + e.getMessage(), e);
 		}
@@ -190,33 +203,33 @@ public class VessConnection implements Connection {
 				server.disconnect();
 				server = null;
 			}
-//			if (essbase != null) {
-//				essbase.signOff();
-//				essbase = null;
-//			}
-			
-			//Engine engine = Engine.getInstance();
-			//Session session = engine.createSession(connInfo);
-//
-//			Database database = session.getDatabase();
-//			//database.re
-			//System.out.println("Dropping schema");
-			//session.unlockReadLocks();
-		
-//			Command dropSchema = session.prepareLocal("DROP SCHEMA VESS_SCHEMA");
-//			dropSchema.executeUpdate();
-//			System.out.println("Dropped schema");
-//					
-//			Command dropUser = session.prepareLocal("DROP USER ESSADMIN");
-//			dropUser.executeUpdate();
-//			System.out.println("Dropped admin user");
+			// if (essbase != null) {
+			// essbase.signOff();
+			// essbase = null;
+			// }
 
-			
+			// Engine engine = Engine.getInstance();
+			// Session session = engine.createSession(connInfo);
+			//
+			// Database database = session.getDatabase();
+			// //database.re
+			// System.out.println("Dropping schema");
+			// session.unlockReadLocks();
+
+			// Command dropSchema =
+			// session.prepareLocal("DROP SCHEMA VESS_SCHEMA");
+			// dropSchema.executeUpdate();
+			// System.out.println("Dropped schema");
+			//
+			// Command dropUser = session.prepareLocal("DROP USER ESSADMIN");
+			// dropUser.executeUpdate();
+			// System.out.println("Dropped admin user");
+
 		} catch (EssException e) {
 			System.out.println("Error signing off of Essbase: " + e.getMessage());
-			
+
 		}
-		
+
 		// Closing the H2 connection is disabled for now because it throws an
 		// NPE, seemingly related to the fact that it calls a method on its
 		// private member variable 'watcher'. The constructor we use to make
@@ -224,11 +237,9 @@ public class VessConnection implements Connection {
 		// null.
 		//
 		// Since it's just a memory cube anyway who gives a shit if we close...
-		
-		//h2Connection.close();
+
+		// h2Connection.close();
 	}
-	
-	
 
 	@Override
 	protected void finalize() throws Throwable {
@@ -454,29 +465,34 @@ public class VessConnection implements Connection {
 		return h2Connection.isWrapperFor(iface);
 	}
 
+	// These methods showed up in Java 1.7. H2 Database doesn't support them,
+	// and trying to call them causes a compilation error.
+
 	@Override
 	public void setSchema(String schema) throws SQLException {
-		h2Connection.setSchema(schema);
+		// h2Connection.setSchema(schema);
 	}
 
-	@Override	
+	@Override
 	public String getSchema() throws SQLException {
-		return h2Connection.getSchema();
+		return null;
+		// return h2Connection.getSchema();
 	}
 
 	@Override
 	public void abort(Executor executor) throws SQLException {
-		h2Connection.abort(executor);
+		// h2Connection.abort(executor);
 	}
 
 	@Override
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-		h2Connection.setNetworkTimeout(executor, milliseconds);
+		// h2Connection.setNetworkTimeout(executor, milliseconds);
 	}
 
 	@Override
 	public int getNetworkTimeout() throws SQLException {
-		return h2Connection.getNetworkTimeout();
+		return 0;
+		// return h2Connection.getNetworkTimeout();
 	}
 
 }

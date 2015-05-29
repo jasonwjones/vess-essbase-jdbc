@@ -10,6 +10,7 @@ import org.h2.index.IndexType;
 import org.h2.message.DbException;
 import org.h2.result.Row;
 import org.h2.schema.Schema;
+import org.h2.table.Column;
 import org.h2.table.IndexColumn;
 import org.h2.table.Table;
 import org.h2.util.New;
@@ -30,8 +31,44 @@ public class EssTable extends Table {
     	super(schema, id, name, false, false);
     	setColumns(model.getColumns());
 		index = new EssIndex(this, id, IndexColumn.wrap(columns), IndexType.createNonUnique(false));
+		System.out.println("Created EssTable: " + name);
+		
+		Column[] pkColumns = getPrimaryKeyColumns(model.getColumns());
+		if (pkColumns != null) {
+			// we have uniques we can create a PK with
+			System.out.println("Added PK index to EssTable");
+			EssIndex pkIndex = new EssIndex(this, id, "PK_" + name, IndexColumn.wrap(pkColumns), IndexType.createPrimaryKey(true, true));
+			this.indexes.add(pkIndex);
+		} else {
+			System.out.println("No PK columns on table " + name);
+		}
+		
 		indexes.add(index);
 		this.model = model;  
+    }
+    
+    public static Column[] getPrimaryKeyColumns(Column[] columns) {
+    	int countPrimaryKeyColumns = 0;
+    	System.out.println("Checking column for PK");
+    	for (int i = 0; i < columns.length; i++) {
+    		if (columns[i].isPrimaryKey()) {
+    			countPrimaryKeyColumns++;
+    			System.out.println("Found at " + i);
+    		}
+    	}
+    	
+    	if (countPrimaryKeyColumns > 0) {
+	    	Column[] pkColumns = new Column[countPrimaryKeyColumns];
+	    	countPrimaryKeyColumns = 0;
+	    	for (int i = 0; i < columns.length; i++) {
+	    		if (columns[i].isPrimaryKey()) {
+	    			pkColumns[countPrimaryKeyColumns++] = columns[i];
+	    		}	    
+	    	}
+	    	return pkColumns;
+    	} else {
+    		return null;
+    	}
     }
     
     public EssModel getModel() {
@@ -100,6 +137,7 @@ public class EssTable extends Table {
 
 	@Override
 	public void removeRow(Session session, Row row) {
+		System.out.println("EssTable removeRow(..): " + row);
 		// TODO Auto-generated method stub
 
 	}
@@ -107,7 +145,6 @@ public class EssTable extends Table {
 	@Override
 	public void truncate(Session session) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
