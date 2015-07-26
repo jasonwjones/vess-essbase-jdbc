@@ -1,3 +1,7 @@
+Occasional build issue? 
+
+Clean/install on essbase-utils, then package Vess
+
 We can recycle/subclass MetaTable into VessMetaTable, then override the generateRows
 method to bring back the custom Vess tables. Then we can manage metadata our own
 way and use generateRows() to adapt it to the normal expected MetaData format of

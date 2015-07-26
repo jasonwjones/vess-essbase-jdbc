@@ -8,6 +8,7 @@ import org.h2.table.Column;
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
 import com.essbase.api.datasource.IEssOlapServer;
+import com.saxifrages.vess.h2.models.data.EssDataLoadModel;
 
 public class TempEssService implements EssService {
 

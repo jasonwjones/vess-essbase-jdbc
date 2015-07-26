@@ -15,6 +15,7 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -42,7 +43,9 @@ import com.saxifrages.vess.h2.models.EssGenericPropsModel;
 import com.saxifrages.vess.h2.models.EssOlapRequestModel;
 import com.saxifrages.vess.h2.models.EssServerAppsModel;
 import com.saxifrages.vess.h2.models.EssServerUsersModel;
-import com.saxifrages.vess.h2.models.EssSubstitutionVariableModel;
+import com.saxifrages.vess.h2.models.server.EssServerCustomFunctions;
+import com.saxifrages.vess.h2.models.server.EssServerInfoModel;
+import com.saxifrages.vess.h2.models.server.EssSubstitutionVariableModel;
 import com.saxifrages.vess.util.EssbaseUrl;
 
 public class VessConnection implements Connection {
@@ -54,6 +57,8 @@ public class VessConnection implements Connection {
 	private Properties info;
 
 	private ConnectionInfo connInfo;
+	
+	private VessDatabaseMetaData metaData;
 
 	public VessConnection(EssbaseUrl essUrl, Properties info) throws SQLException {
 		try {
@@ -91,8 +96,6 @@ public class VessConnection implements Connection {
 			// ResultInterface result = drop.equals(obj)
 
 			Database database = session.getDatabase();
-			// EssService service = new TempEssService();
-			// EssService service = new SimpleEssService();
 
 			User user = new User(database, 1000, "ESSADMIN", true);
 			user.setSaltAndHash(new byte[] { 8, 2 }, new byte[] { 1, 7 });
@@ -110,13 +113,24 @@ public class VessConnection implements Connection {
 			String appDb = app + "_" + db + "_DATA";
 
 			EssBuilder essBuilder = new EssBuilder(service, session, tableFactory, database);
-			Schema sampleSchema = new Schema(database, 3001, "SAMPLE", user, false);
-			if (database.findSchema(sampleSchema.getName()) == null) {
-				System.out.println("Adding Sample");
-				database.addDatabaseObject(session, sampleSchema);
-				essBuilder.buildApplicationSchema(sampleSchema, "Sample");
+			
+			int schemaId = 3000;
+			for (String application : Arrays.asList("Sample")) {
+				Schema appSchema = new Schema(database, schemaId, application.toUpperCase(), user, false);
+				schemaId += 1000;
+
+				// We add the schema so that it shows as part of the database (catalog) metadata
+				// but we want the other stuff to be populated on demand
+				if (database.findSchema(appSchema.getName()) == null) {
+					System.out.println("Adding Sample");
+					database.addDatabaseObject(session, appSchema);
+					essBuilder.buildApplicationSchema(appSchema, application);
+				}
+
 			}
 			
+			//Schema sampleSchema = new Schema(database, 3001, "SAMPLE", user, false);
+						
 			///////////
 			
 			if (database.findSchema(schema.getName()) == null) {
@@ -151,6 +165,14 @@ public class VessConnection implements Connection {
 				EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES", schema);
 				database.addSchemaObject(session, cubeInfoTable);
 
+				EssServerInfoModel serverInfoModel = new EssServerInfoModel(service);
+				EssTable serverInfoTable = tableFactory.createTable(serverInfoModel, "SERVER", schema);
+				database.addSchemaObject(session, serverInfoTable);
+
+				EssServerCustomFunctions functions = new EssServerCustomFunctions(service);
+				EssTable serverFunctionsTable = tableFactory.createTable(functions, "CUSTOM_FUNCTIONS", schema);
+				database.addSchemaObject(session, serverFunctionsTable);
+				
 				try {
 					EssModel dataLoadModel = service.createCubeModel(essUrl.getApplication(), essUrl.getDatabase());
 					EssTable sampleFact = tableFactory.createTable(dataLoadModel, appDb, schema);
@@ -161,8 +183,9 @@ public class VessConnection implements Connection {
 				}
 			}
 
+			// also has a constructor that takes a ConncetionInfo object
 			h2Connection = new JdbcConnection(session, "sa", "foo");
-			// h2Connection = new JdbcConnection(connInfo, true);
+			metaData = new VessDatabaseMetaData(h2Connection.getMetaData());
 		} catch (EssException e) {
 			throw new SQLException("Error connecting to Essbase: " + e.getMessage(), e);
 		}
@@ -191,7 +214,7 @@ public class VessConnection implements Connection {
 
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException {
-		return new VessDatabaseMetaData(h2Connection.getMetaData());
+		return metaData;
 	}
 
 	@Override

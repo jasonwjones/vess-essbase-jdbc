@@ -1,4 +1,4 @@
-package com.saxifrages.vess.h2.models;
+package com.saxifrages.vess.h2.models.server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,26 +25,26 @@ public class EssSubstitutionVariableModel implements EssModel {
 		Column name = new Column("NAME", Value.STRING, 320, -1, 20);
 		name.setPrimaryKey(true);
 		Column value = new Column("VALUE", Value.STRING, 256, -1, 20);
-		Column app = new Column("APPLICATION", Value.STRING, 30, -1, 10);
-		Column database = new Column("DATABASE", Value.STRING, 30, -1, 10);
-		return new Column[] { name, value, app, database };
+		//Column app = new Column("APPLICATION", Value.STRING, 30, -1, 10);
+		//Column database = new Column("DATABASE", Value.STRING, 30, -1, 10);
+		return new Column[] { name, value};
 	}
 
 	public EssResultSet get() {
 		try {
 			List<Row> rows = new ArrayList<Row>();
 			for (String[] variable : service.getSubstitutionVariables()) {
-				Value[] var = new Value[4];
+				Value[] var = new Value[2];
 				var[0] = ValueString.get(StringUtil.emptyIfNull(variable[0]));
 				var[1] = ValueString.get(StringUtil.emptyIfNull(variable[1]));
-				var[2] = ValueString.get(StringUtil.emptyIfNull(variable[2]));
-				var[3] = ValueString.get(StringUtil.emptyIfNull(variable[3]));
+				//var[2] = ValueString.get(StringUtil.emptyIfNull(variable[2]));
+				//var[3] = ValueString.get(StringUtil.emptyIfNull(variable[3]));
 				Row row = new Row(var, 0);
 				rows.add(row);
 			}
 			return new ArrayListEssResultSet(rows, 4);
 		} catch (EssException e) {
-			throw EssTable.wrapException("foo", e);
+			throw EssTable.wrapException("Unable to get substitution variables", e);
 		}
 	}
 
@@ -55,9 +55,13 @@ public class EssSubstitutionVariableModel implements EssModel {
 		}
 		String name = row.getValue(0).getString();
 		String value = row.getValue(1).getString();
-		String application = row.getValue(2).getString();
-		String database = row.getValue(3).getString();
-		service.addSubstitutionVariable(name, value, application, database);
+		//String application = row.getValue(2).getString();
+		//String database = row.getValue(3).getString();
+		try { 
+			service.addSubstitutionVariable(name, value);
+		} catch (EssException e) {
+			throw EssTable.wrapException("Unable to set substitution variable", e);
+		}
 	}
 
 	public EssService getService() {

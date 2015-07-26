@@ -22,7 +22,6 @@ public abstract class AbstractEssbaseCubeModel extends AbstractEssbaseModel {
 	@Override
 	public void endDataLoad() {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -36,5 +35,4 @@ public abstract class AbstractEssbaseCubeModel extends AbstractEssbaseModel {
 	
 	public abstract EssResultSet get(IEssCube cube) throws EssException;
 	
-
 }

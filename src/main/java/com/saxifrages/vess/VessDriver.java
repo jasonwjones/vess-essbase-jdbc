@@ -36,7 +36,9 @@ public class VessDriver implements Driver {
 
 	public static void main(String[] args) throws SQLException, Exception {
 		System.out.println(null + "Foo");
-		String url = "jdbc:essbase://192.168.1.231:9000/Sample.Basic;map=Sample.Basic";
+
+		//String url = "jdbc:essbase://192.168.1.231:9000/Sample.Basic;map=Sample.Basic";
+		String url = "jdbc:essbase://172.16.28.136:9000/Sample.Basic;map=Sample.Basic";
 		Properties props = new Properties();
 		props.setProperty("user", "admin");
 		props.setProperty("password", "Way2GoGuys");
@@ -64,6 +66,9 @@ public class VessDriver implements Driver {
 		System.out.println("# SCHEMAS");
 		printer.printResultSet(conn.getMetaData().getSchemas());
 		//conn.close();
+		
+		ResultSet rs2 = conn.createStatement().executeQuery("SELECT * FROM SAMPLE.BASIC_DIM_PRODUCT");
+		printer.printResultSet(rs2);
 		
 		conn = null;
 		System.out.println("Signed off one");

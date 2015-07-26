@@ -5,6 +5,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,18 @@ import org.slf4j.LoggerFactory;
 public class VessDatabaseMetaData implements DatabaseMetaData {
 
 	private static final Logger logger = LoggerFactory.getLogger(VessDatabaseMetaData.class);
-	
+
+	/**
+	 * Vess delegates out to the H2 DatabaseMetaData for most things but
+	 * overrides it where necessary
+	 */
 	private DatabaseMetaData h2;
+
+	/** 
+	 * The set of valid applications on the server. Stored so that we can easily check when we 
+	 * need to dynamically pull dimension info...
+	 */
+	private Set<String> availableApplications;
 	
 	public VessDatabaseMetaData(DatabaseMetaData h2) {
 		this.h2 = h2;
@@ -64,27 +75,39 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 	}
 
 	public String getDatabaseProductName() throws SQLException {
-		return h2.getDatabaseProductName();
+		return "Vess Virtual Essbase JDBC Driver";
 	}
 
 	public String getDatabaseProductVersion() throws SQLException {
-		return h2.getDatabaseProductVersion();
+		return "0.9.0-TODO bring back Hyp version";
 	}
 
 	public String getDriverName() throws SQLException {
-		return h2.getDriverName();
+		return "Vess Driver Name";
 	}
 
 	public String getDriverVersion() throws SQLException {
-		return h2.getDriverVersion();
+		return "0.9.0";
 	}
 
 	public int getDriverMajorVersion() {
-		return h2.getDriverMajorVersion();
+		return 0;
 	}
 
 	public int getDriverMinorVersion() {
-		return h2.getDriverMinorVersion();
+		return 9;
+	}
+
+	public String getSchemaTerm() throws SQLException {
+		return "Cube";
+	}
+
+	public String getProcedureTerm() throws SQLException {
+		return "Sprocz";
+	}
+
+	public String getCatalogTerm() throws SQLException {
+		return "Application";
 	}
 
 	public boolean usesLocalFiles() throws SQLException {
@@ -265,18 +288,6 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 
 	public boolean supportsLimitedOuterJoins() throws SQLException {
 		return h2.supportsLimitedOuterJoins();
-	}
-
-	public String getSchemaTerm() throws SQLException {
-		return h2.getSchemaTerm();
-	}
-
-	public String getProcedureTerm() throws SQLException {
-		return h2.getProcedureTerm();
-	}
-
-	public String getCatalogTerm() throws SQLException {
-		return h2.getCatalogTerm();
 	}
 
 	public boolean isCatalogAtStart() throws SQLException {
@@ -512,8 +523,10 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 
 	public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
 			throws SQLException {
-		logger.info("Asked for tables for catalog {}, pattern {}, tableNamePattern {}", catalog, schemaPattern, tableNamePattern);
-		// Asked for tables for catalog null, pattern null, tableNamePattern null
+		logger.info("Asked for tables for catalog {}, pattern {}, tableNamePattern {}", catalog, schemaPattern,
+				tableNamePattern);
+		// Asked for tables for catalog null, pattern null, tableNamePattern
+		// null
 		return h2.getTables(catalog, schemaPattern, tableNamePattern, types);
 	}
 
@@ -534,7 +547,8 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 			throws SQLException {
 		System.out.println("Get columns");
 		logger.info("getColumns, catalog={}, schemaPattern={}, tableName={}", catalog, schemaPattern, tableNamePattern);
-		// getColumns, catalog=VESS, schemaPattern=VESS_SCHEMA, tableName=SAMPLE_BASIC_DATA
+		// getColumns, catalog=VESS, schemaPattern=VESS_SCHEMA,
+		// tableName=SAMPLE_BASIC_DATA
 		return h2.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
 	}
 
@@ -753,5 +767,5 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 	public boolean supportsRefCursors() throws SQLException {
 		return h2.supportsRefCursors();
 	}
-	
+
 }

@@ -30,6 +30,10 @@ public abstract class AbstractEssbaseModel implements EssModel {
 		public void convert(E[] objects, Value[] values) throws EssException;
 	}
 	
+	public interface StringArrayMapper {
+		public void convert(String[] row, Value[] values) throws EssException;
+	}
+	
 	public AbstractEssbaseModel(EssService service) {
 		this.service = service;
 	}
@@ -58,6 +62,28 @@ public abstract class AbstractEssbaseModel implements EssModel {
 		}
 		return new ArrayListEssResultSet(rows, getColumnCount());
 	}
+	
+	public EssResultSet mapper(String[][] records, StringArrayMapper mapper) throws EssException {
+		List<Row> rows = new ArrayList<Row>();
+		for (String[] row : records) {
+			Value[] values = new Value[getColumnCount()];
+			mapper.convert(row, values);
+			rows.add(new Row(values, 0));
+		}
+		return new ArrayListEssResultSet(rows, getColumnCount());
+	}
+	
+	public <E> EssResultSet mapper(Iterable<E> iterator, IterMapper<E> mapper) throws EssException {
+		List<Row> rows = new ArrayList<Row>();
+		for (E item : iterator) {
+			Value[] values = new Value[getColumnCount()];
+			mapper.convert(item, values);
+			rows.add(new Row(values, 0));
+		}
+		return new ArrayListEssResultSet(rows, getColumnCount());
+	}
+	
+	
 	
 //	public <E> EssResultSet mapperCustom(IEssIterator iterator, IterMapper<E> mapper) throws EssException {
 //	}

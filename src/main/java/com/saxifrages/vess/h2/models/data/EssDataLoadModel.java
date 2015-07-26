@@ -1,4 +1,4 @@
-package com.saxifrages.vess.h2;
+package com.saxifrages.vess.h2.models.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +10,9 @@ import org.h2.result.Row;
 import org.h2.table.Column;
 import org.h2.value.Value;
 
+import com.saxifrages.vess.h2.EssModel;
+import com.saxifrages.vess.h2.EssService;
+import com.saxifrages.vess.h2.EssbaseBufferingRowLoader;
 import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
 

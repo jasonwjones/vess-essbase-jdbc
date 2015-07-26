@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.h2.table.Column;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.base.IEssIterator;
@@ -16,8 +18,11 @@ import com.essbase.api.metadata.IEssDimension.EEssDimensionCategory;
 import com.essbase.api.session.IEssbase;
 import com.saxifrages.essbase.util.ConversionDelegate;
 import com.saxifrages.essbase.util.IteratorUtil;
+import com.saxifrages.vess.h2.models.data.EssDataLoadModel;
 
 public class SimpleEssService implements EssService {
+
+	private static final Logger logger = LoggerFactory.getLogger(SimpleEssService.class);
 
 	private IEssOlapServer server;
 
@@ -32,17 +37,23 @@ public class SimpleEssService implements EssService {
 	}
 
 	@Override
-	public void addSubstitutionVariable(String name, String value) {
-		// TODO Auto-generated method stub
-
+	public void addSubstitutionVariable(String name, String value) throws EssException {
+		logger.info("Creating server var {}={}", name, value);
+		server.createSubstitutionVariable(name, value);
 	}
 
 	@Override
-	public void addSubstitutionVariable(String application, String database, String name, String value) {
-		// TODO Auto-generated method stub
-
+	public void addSubstitutionVariable(String application, String database, String name, String value)
+			throws EssException {
+		logger.info("Creating var for {}.{}, {}={}", application, database, name, value);
+		IEssCube cube = server.getApplication(application).getCube(database);
+		cube.createSubstitutionVariable(name, value);
 	}
 
+	/**
+	 * Returns server substitution variables (those that aren't associated with
+	 * a particular app)
+	 */
 	@Override
 	public List<String[]> getSubstitutionVariables() throws EssException {
 		System.out.println("Getting sub vars from server");
@@ -76,6 +87,7 @@ public class SimpleEssService implements EssService {
 
 	@Override
 	public List<String> getDimensions(String application, String cubeName) throws EssException {
+		server.clearActive();
 		IEssOlapApplication app = server.getApplication(application);
 		IEssCube cube = app.getCube(cubeName);
 		IEssIterator dimIterator = cube.getDimensions();
@@ -118,6 +130,7 @@ public class SimpleEssService implements EssService {
 	}
 
 	private List<String> getStoredDimensions(String app, String cube) throws EssException {
+		server.clearActive();
 		IEssCubeOutline outline = server.getApplication(app).getCube(cube).openOutline();
 		IEssIterator dimensionIterator = outline.getDimensions();
 
@@ -135,6 +148,7 @@ public class SimpleEssService implements EssService {
 	}
 
 	public IEssCube getCube(String application, String cube) throws EssException {
+
 		return server.getApplication(application).getCube(cube);
 	}
 

@@ -10,9 +10,9 @@ public interface EssService {
 
 	public static final int MAX_MEMBER_NAME_LENGTH = 80;
 	
-	public void addSubstitutionVariable(String name, String value);
+	public void addSubstitutionVariable(String name, String value) throws EssException;
 
-	public void addSubstitutionVariable(String name, String value, String application, String database);
+	public void addSubstitutionVariable(String name, String value, String application, String database) throws EssException;
 
 	public List<String[]> getSubstitutionVariables() throws EssException;
 
