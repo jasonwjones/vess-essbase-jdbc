@@ -19,3 +19,4 @@ cp target/vess-essbase-jdbc-*.jar target/dist/
 cp NOTES.md target/dist/
 
 zip target/vess-dist.zip target/dist/*
+cp target/dist/*.jar ../vess-dist

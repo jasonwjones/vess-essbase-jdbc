@@ -101,9 +101,16 @@ public class VessConnection implements Connection {
 			user.setSaltAndHash(new byte[] { 8, 2 }, new byte[] { 1, 7 });
 			Schema schema = new Schema(database, 1001, "VESS_SCHEMA", user, false);
 			EssTableFactory tableFactory = new EssTableFactory(2000);
+			
 			EssSubstitutionVariableModel variableModel = new EssSubstitutionVariableModel();
 			variableModel.setService(service);
 
+			// Server properties
+			EssGenericPropsModel genericProps = new EssGenericPropsModel(service, service.getServer());
+			EssTable genericPropsTable = tableFactory.createTable(genericProps, "PROPS", schema);
+			database.addSchemaObject(session, genericPropsTable);
+
+			
 			if (database.findUser(user.getName()) == null) {
 				database.addDatabaseObject(session, user);
 			}
@@ -115,7 +122,7 @@ public class VessConnection implements Connection {
 			EssBuilder essBuilder = new EssBuilder(service, session, tableFactory, database);
 			
 			int schemaId = 3000;
-			for (String application : Arrays.asList("Sample")) {
+			for (String application : Arrays.asList(app)) {
 				Schema appSchema = new Schema(database, schemaId, application.toUpperCase(), user, false);
 				schemaId += 1000;
 
@@ -157,9 +164,9 @@ public class VessConnection implements Connection {
 				database.addSchemaObject(session, usersTable);
 				//database.addSchemaObject(session, usersTable.getPrimaryKey());
 
-				EssGenericPropsModel serverPropsModel = new EssGenericPropsModel(service);
-				EssTable genericPropsTable = tableFactory.createTable(serverPropsModel, "TEST_PROPS", schema);
-				database.addSchemaObject(session, genericPropsTable);
+//				EssGenericPropsModel serverPropsModel = new EssGenericPropsModel(service);
+//				EssTable genericPropsTable = tableFactory.createTable(serverPropsModel, "TEST_PROPS", schema);
+//				database.addSchemaObject(session, genericPropsTable);
 
 				EssCubeInfoModel cubeInfoModel = new EssCubeInfoModel(service);
 				EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES", schema);

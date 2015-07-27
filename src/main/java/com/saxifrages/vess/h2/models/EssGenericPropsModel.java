@@ -1,5 +1,6 @@
 package com.saxifrages.vess.h2.models;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,34 +9,55 @@ import org.h2.value.Value;
 import org.h2.value.ValueString;
 
 import com.essbase.api.base.EssException;
-import com.essbase.api.datasource.IEssOlapServer;
+import com.essbase.api.base.IEssProperties;
 import com.saxifrages.vess.h2.ColumnBuilder;
 import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.StringUtil;
 import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
 
-public class EssGenericPropsModel extends AbstractEssbaseServerModel {
+/**
+ * Generic table model for translating the IEssProperties interface for various
+ * objects. Many objects in the Essbase Java API implement this interface, such
+ * as apps, cubes, servers, and more.
+ * 
+ * @author jasonwjones
+ *
+ */
+public class EssGenericPropsModel extends AbstractEssbaseModel {
 
-	public EssGenericPropsModel(EssService service) {
+	private IEssProperties props;
+
+	public EssGenericPropsModel(EssService service, IEssProperties props) {
 		super(service);
+		this.props = props;
 		columns = new ColumnBuilder()
 				.addString("PROPERTY_NAME")
+				.addString("PROPERTY_VALUE")
 				.build();
 	}
 
 	@Override
-	protected EssResultSet get(IEssOlapServer server) throws EssException {
-		String[] propNames = server.getPropertyNames();
-		
-		List<Row> rows = new ArrayList<Row>();
-		for (String aliasTableName : propNames) {
-			Value[] var = new Value[1];
-			var[0] = ValueString.get(StringUtil.emptyIfNull(aliasTableName));
-			Row row = new Row(var, 0);
-			rows.add(row);
+	public void endDataLoad() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public EssResultSet get() throws SQLException {
+		try {
+			List<Row> rows = new ArrayList<Row>();
+
+			for (String propName : props.getPropertyNames()) {
+				Value[] var = new Value[getColumnCount()];
+				var[0] = ValueString.get(propName);
+				var[1] = ValueString.get(StringUtil.emptyIfNull(props.getPropertyValueAny(propName).toString()));
+				rows.add(new Row(var, 0));
+			}
+
+			return new ArrayListEssResultSet(rows, 2);
+		} catch (EssException e) {
+			throw new SQLException("Error fetching Essbase properties", e);
 		}
-		return new ArrayListEssResultSet(rows, 1);
 	}
 
 }

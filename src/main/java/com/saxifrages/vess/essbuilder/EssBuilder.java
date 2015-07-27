@@ -10,6 +10,8 @@ import com.essbase.api.base.EssException;
 import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.EssTable;
 import com.saxifrages.vess.h2.EssTableFactory;
+import com.saxifrages.vess.h2.models.EssGenericPropsModel;
+import com.saxifrages.vess.h2.models.app.EssAppPropsModel;
 import com.saxifrages.vess.h2.models.cube.EssCubeSubstitutionVariableModel;
 import com.saxifrages.vess.h2.models.cube.outline.EssCubeDimensionModel;
 
@@ -48,14 +50,19 @@ public class EssBuilder {
 	 */
 	public void buildApplicationSchema(Schema schema, String application) throws EssException {
 		logger.info("Building application schema for {}", application);
+		
+//		EssAppPropsModel appModel = new EssAppPropsModel(service, application);
+//		EssTable appTable = tableFactory.createTable(appModel, "PROPS", schema);
+//		database.addSchemaObject(session, appTable);
 
-		EssCubeSubstitutionVariableModel variables = new EssCubeSubstitutionVariableModel(service, application, "Basic");
-		EssTable variableTable = tableFactory.createTable(variables, "VARS", schema);
-		database.addSchemaObject(session, variableTable);
+		EssGenericPropsModel genericProps = new EssGenericPropsModel(service, service.getApplication(application));
+		EssTable genericPropsTable = tableFactory.createTable(genericProps, "PROPS", schema);
+		database.addSchemaObject(session, genericPropsTable);
 
+		
 		for (String cube : service.getCubes(application)) {
 			// need to have a way to build a lazy cube schema
-			buildCubeSchema(schema, application, cube);
+			buildCubeSchema(schema, application, cube.toUpperCase());
 		}
 
 	}
@@ -73,9 +80,17 @@ public class EssBuilder {
 	public void buildCubeSchema(Schema schema, String application, String cube) throws EssException {
 		logger.info("Building cube schema for {}.{}", application, cube);
 
+		EssCubeSubstitutionVariableModel variables = new EssCubeSubstitutionVariableModel(service, application, cube);
+		EssTable variableTable = tableFactory.createTable(variables, cube + "_VARS", schema);
+		database.addSchemaObject(session, variableTable);
+
+		EssGenericPropsModel genericProps = new EssGenericPropsModel(service, service.getApplication(application).getCube(cube));
+		EssTable genericPropsTable = tableFactory.createTable(genericProps, cube + "_PROPS", schema);
+		database.addSchemaObject(session, genericPropsTable);
+		
 		for (String dimension : service.getDimensions(application, cube)) {
 			EssCubeDimensionModel dimModel = new EssCubeDimensionModel(service, application, cube, dimension);
-			String tableName = cube.toUpperCase() + "_DIM_" + dimension.toUpperCase();
+			String tableName = cube + "_DIM_" + dimension.toUpperCase();
 			EssTable dimTable = tableFactory.createTable(dimModel, tableName, schema);
 			database.addSchemaObject(session, dimTable);
 		}

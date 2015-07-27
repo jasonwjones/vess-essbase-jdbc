@@ -158,7 +158,6 @@ public class SimpleEssService implements EssService {
 	}
 
 	public IEssCube getCube(String application, String cube) throws EssException {
-
 		return server.getApplication(application).getCube(cube);
 	}
 
@@ -216,4 +215,9 @@ public class SimpleEssService implements EssService {
 		return server;
 	}
 
+	@Override
+	public IEssOlapApplication getApplication(String application) throws EssException {
+		return server.getApplication(application);
+	}
+	
 }

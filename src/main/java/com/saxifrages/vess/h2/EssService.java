@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
+import com.essbase.api.datasource.IEssOlapApplication;
 import com.essbase.api.datasource.IEssOlapServer;
 
 public interface EssService {
@@ -29,6 +30,8 @@ public interface EssService {
 	public List<String> getDimensions(String application, String cube) throws EssException;
 	
 	public IEssCube getCube(String application, String cube) throws EssException;
+	
+	public IEssOlapApplication getApplication(String application) throws EssException;
 	
 	public IEssOlapServer getServer() throws EssException;
 	

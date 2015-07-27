@@ -7,6 +7,7 @@ import org.h2.table.Column;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
+import com.essbase.api.datasource.IEssOlapApplication;
 import com.essbase.api.datasource.IEssOlapServer;
 import com.saxifrages.vess.h2.models.data.EssDataLoadModel;
 
@@ -97,6 +98,12 @@ public class TempEssService implements EssService {
 	@Override
 	public void deleteVariable(String application, String cube, String name) throws EssException {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public IEssOlapApplication getApplication(String application) throws EssException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

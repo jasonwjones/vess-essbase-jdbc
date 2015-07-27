@@ -1,15 +1,24 @@
-package com.saxifrages.vess.h2.models;
+package com.saxifrages.vess.h2.models.cube;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.h2.result.Row;
 import org.h2.value.Value;
 import org.h2.value.ValueInt;
 import org.h2.value.ValueString;
 
 import com.essbase.api.base.EssException;
+import com.essbase.api.datasource.IEssCube;
 import com.essbase.api.datasource.IEssOlapServer;
 import com.essbase.api.metadata.IEssDimension;
 import com.saxifrages.vess.h2.ColumnBuilder;
 import com.saxifrages.vess.h2.EssService;
+import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
+import com.saxifrages.vess.h2.models.AbstractEssbaseCubeModel;
+import com.saxifrages.vess.h2.models.AbstractEssbaseModel.IterMapper;
+import com.saxifrages.vess.h2.models.ColConstants;
 
 /**
  * Models the requests as seen in the Sessions pane of EAS
@@ -17,14 +26,15 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
  * @author jasonwjones
  *
  */
-public class EssCubeStatsModel extends AbstractEssbaseServerModel {
+public class EssCubeStatsModel extends AbstractEssbaseCubeModel {
 
 	//private IEssOlapServer server;
 	
 	private static final IterMapper<IEssDimension> DIMENSION_MAPPER = new DimensionMapper();
 	
-	public EssCubeStatsModel(EssService service) {
-		super(service);
+	public EssCubeStatsModel(EssService service, String application, String cube) {
+		super(service, application, cube);
+
 		columns = new ColumnBuilder()
 			.add(ColConstants.DIMENSION_NAME)
 			.addInteger("TYPE")
@@ -49,8 +59,11 @@ public class EssCubeStatsModel extends AbstractEssbaseServerModel {
 	}
 
 	@Override
-	protected EssResultSet get(IEssOlapServer server) throws EssException {
-		return mapper(server.getRequests(null, null, null), DIMENSION_MAPPER);
+	public EssResultSet get(IEssCube cube) throws EssException {
+		List<Row> rows = new ArrayList<Row>();
+		
+		return new ArrayListEssResultSet(rows, getColumnCount());
 	}
+
 	
 }
