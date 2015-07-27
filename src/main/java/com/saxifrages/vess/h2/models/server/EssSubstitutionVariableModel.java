@@ -63,6 +63,10 @@ public class EssSubstitutionVariableModel implements EssModel {
 			throw EssTable.wrapException("Unable to set substitution variable", e);
 		}
 	}
+	
+	public void removeRealRow(Session session, Row row) {
+		
+	}
 
 	public EssService getService() {
 		return service;

@@ -14,6 +14,8 @@ public interface EssModel {
 	
 	public void addRealRow(Session session, Row row) throws SQLException;
 
+	public void removeRealRow(Session session, Row row) throws SQLException;
+	
 	public void endDataLoad();
 
 	/**

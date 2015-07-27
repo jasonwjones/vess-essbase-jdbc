@@ -29,5 +29,5 @@ public abstract class AbstractEssbaseServerModel extends AbstractEssbaseModel {
 	}
 	
 	protected abstract EssResultSet get(IEssOlapServer server) throws EssException;
-	
+
 }

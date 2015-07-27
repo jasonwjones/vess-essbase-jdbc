@@ -88,5 +88,15 @@ public class TempEssService implements EssService {
 	public IEssOlapServer getServer() throws EssException {
 		throw new RuntimeException("getServer() unimplemented");
 	}
+
+	@Override
+	public void deleteVariable(String application, String name) throws EssException {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void deleteVariable(String application, String cube, String name) throws EssException {
+		// TODO Auto-generated method stub
+	}
 	
 }

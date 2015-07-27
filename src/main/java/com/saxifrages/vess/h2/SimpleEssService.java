@@ -67,11 +67,21 @@ public class SimpleEssService implements EssService {
 	}
 
 	@Override
-	public void deleteVariable(String name) {
-		// TODO Auto-generated method stub
-
+	public void deleteVariable(String name) throws EssException {
+		logger.info("Deleting server substitution variable: {}", name);
+		server.deleteSubstitutionVariable(name);
 	}
 
+	@Override
+	public void deleteVariable(String application, String name) throws EssException {
+		server.getApplication(application).deleteSubstitutionVariable(name);
+	}
+	
+	@Override
+	public void deleteVariable(String application, String cube, String name) throws EssException {
+		server.getApplication(application).getCube(cube).deleteSubstitutionVariable(name);
+	}
+	
 	@Override
 	public List<String> getApplications() throws EssException {
 		IEssIterator appIterator = server.getApplications();

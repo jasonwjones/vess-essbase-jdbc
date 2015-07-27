@@ -138,8 +138,11 @@ public class EssTable extends Table {
 	@Override
 	public void removeRow(Session session, Row row) {
 		System.out.println("EssTable removeRow(..): " + row);
-		// TODO Auto-generated method stub
-
+		try {
+			model.removeRealRow(session, row);
+		} catch (SQLException e) {
+			throw wrapException("<no sql>", e);
+		}
 	}
 
 	@Override

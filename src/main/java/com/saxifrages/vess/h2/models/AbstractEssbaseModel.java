@@ -8,6 +8,8 @@ import org.h2.engine.Session;
 import org.h2.result.Row;
 import org.h2.table.Column;
 import org.h2.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.essbase.api.base.EssException;
 import com.essbase.api.base.IEssIterator;
@@ -17,6 +19,8 @@ import com.saxifrages.vess.h2.essresults.ArrayListEssResultSet;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
 
 public abstract class AbstractEssbaseModel implements EssModel {
+	
+	private static final Logger logger = LoggerFactory.getLogger(AbstractEssbaseModel.class);
 	
 	protected Column[] columns;
 	
@@ -83,6 +87,9 @@ public abstract class AbstractEssbaseModel implements EssModel {
 		return new ArrayListEssResultSet(rows, getColumnCount());
 	}
 	
+	public void removeRealRow(Session session, Row row) throws SQLException {
+		logger.info("Deletion not implemented for this object type");
+	}
 	
 	
 //	public <E> EssResultSet mapperCustom(IEssIterator iterator, IterMapper<E> mapper) throws EssException {

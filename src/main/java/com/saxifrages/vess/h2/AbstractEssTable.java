@@ -25,7 +25,6 @@ public abstract class AbstractEssTable extends Table {
 	@Override
 	public void close(Session session) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override

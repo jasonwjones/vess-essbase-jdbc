@@ -16,8 +16,12 @@ public interface EssService {
 
 	public List<String[]> getSubstitutionVariables() throws EssException;
 
-	public void deleteVariable(String name);
+	public void deleteVariable(String name) throws EssException;
 
+	public void deleteVariable(String application, String name) throws EssException;
+	
+	public void deleteVariable(String application, String cube, String name) throws EssException;
+	
 	public List<String> getApplications() throws EssException;
 	
 	public List<String> getCubes(String application) throws EssException;

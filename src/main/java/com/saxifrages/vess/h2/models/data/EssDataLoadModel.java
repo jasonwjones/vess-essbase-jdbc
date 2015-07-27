@@ -1,5 +1,6 @@
 package com.saxifrages.vess.h2.models.data;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +10,8 @@ import org.h2.message.DbException;
 import org.h2.result.Row;
 import org.h2.table.Column;
 import org.h2.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.saxifrages.vess.h2.EssModel;
 import com.saxifrages.vess.h2.EssService;
@@ -18,7 +21,7 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
 
 public class EssDataLoadModel implements EssModel {
 
-	//private static final Logger logger = LoggerFactory.getLogger(EssDataLoadModel.class);;
+	private static final Logger logger = LoggerFactory.getLogger(EssDataLoadModel.class);
 	
 	private Column[] columns;
 	
@@ -92,6 +95,11 @@ public class EssDataLoadModel implements EssModel {
 	@Override
 	public EssResultSet get() {
 		return new ArrayListEssResultSet(Collections.emptyList(), columns.length);
+	}
+
+	@Override
+	public void removeRealRow(Session session, Row row) throws SQLException {
+		logger.info("Delete not supported for data models");
 	}
 
 }
