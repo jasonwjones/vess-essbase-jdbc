@@ -68,18 +68,37 @@ public class SimpleEssService implements EssService {
 
 	@Override
 	public void deleteVariable(String name) throws EssException {
-		logger.info("Deleting server substitution variable: {}", name);
-		server.deleteSubstitutionVariable(name);
+		logger.info("Ignoring Deleting server substitution variable: {}", name);
+		//server.deleteSubstitutionVariable(name);
 	}
 
 	@Override
 	public void deleteVariable(String application, String name) throws EssException {
-		server.getApplication(application).deleteSubstitutionVariable(name);
+		logger.info("Ignoring request to delete app level variable");
+		//server.getApplication(application).deleteSubstitutionVariable(name);
 	}
+	
 	
 	@Override
 	public void deleteVariable(String application, String cube, String name) throws EssException {
-		server.getApplication(application).getCube(cube).deleteSubstitutionVariable(name);
+		// 0: Var name
+		// 1: value
+		// 2: App
+		// 3: Cube
+		// will be null if not set (global/server)
+		IEssCube essCube = server.getApplication(application).getCube(cube);
+		String vars[][] = essCube.getSubstitutionVariables();
+		
+		for (String[] var : vars) {
+			if (application.equals(var[2])) {
+				if (cube.equals(var[3])) {
+					logger.info("Found variable {} on {}/{} to delete", name, application, cube);
+					essCube.deleteSubstitutionVariable(name);
+					break;
+				}
+			}
+		}
+		logger.warn("Did not find variable {} on {}/{} to delete", name, application, cube);
 	}
 	
 	@Override
@@ -104,6 +123,10 @@ public class SimpleEssService implements EssService {
 		return IteratorUtil.iteratorToList(dimIterator, DIM_NAMES);
 	}
 
+	/**
+	 * Builds a data model for the particular cube (all of the dimensions become columns, and you
+	 * get a DATA column
+	 */
 	@Override
 	public EssModel createCubeModel(String application, String database) throws EssException {
 		List<String> dimensionNames = getStoredDimensions(application, database);
@@ -154,6 +177,7 @@ public class SimpleEssService implements EssService {
 				storedDimNames.add(dimension.getName());
 			}
 		}
+		outline.close();
 		return storedDimNames;
 	}
 

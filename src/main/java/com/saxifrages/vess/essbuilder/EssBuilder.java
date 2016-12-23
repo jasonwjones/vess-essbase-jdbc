@@ -1,5 +1,8 @@
 package com.saxifrages.vess.essbuilder;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.h2.engine.Database;
 import org.h2.engine.Session;
 import org.h2.schema.Schema;
@@ -7,13 +10,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.essbase.api.base.EssException;
+import com.jasonwjones.jacombi.CartesianIndex;
+import com.saxifrages.vess.h2.EssModel;
 import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.EssTable;
 import com.saxifrages.vess.h2.EssTableFactory;
+import com.saxifrages.vess.h2.datatable.EssDataTable;
+import com.saxifrages.vess.h2.datatable.EssDataTableDefinition;
+import com.saxifrages.vess.h2.models.EssCubeAliasTableNamesModel;
+import com.saxifrages.vess.h2.models.EssCubeInfoModel;
 import com.saxifrages.vess.h2.models.EssGenericPropsModel;
-import com.saxifrages.vess.h2.models.app.EssAppPropsModel;
+import com.saxifrages.vess.h2.models.EssOlapRequestModel;
+import com.saxifrages.vess.h2.models.EssServerAppsModel;
+import com.saxifrages.vess.h2.models.EssServerUsersModel;
 import com.saxifrages.vess.h2.models.cube.EssCubeSubstitutionVariableModel;
 import com.saxifrages.vess.h2.models.cube.outline.EssCubeDimensionModel;
+import com.saxifrages.vess.h2.models.server.EssServerCustomFunctions;
+import com.saxifrages.vess.h2.models.server.EssServerInfoModel;
+import com.saxifrages.vess.h2.models.server.EssSubstitutionVariableModel;
 
 public class EssBuilder {
 
@@ -31,6 +45,41 @@ public class EssBuilder {
 		this.database = database;
 	}
 
+	public void buildServerSchema(Schema schema) throws EssException {
+		if (database.findSchema(schema.getName()) == null) {
+			database.addDatabaseObject(session, schema);
+
+			EssSubstitutionVariableModel variableModel = new EssSubstitutionVariableModel();
+			variableModel.setService(service);
+			EssTable variableTable = tableFactory.createTable(variableModel, "VARS", schema);
+			database.addSchemaObject(session, variableTable);
+
+			EssOlapRequestModel requestModel = new EssOlapRequestModel(service);
+			EssTable requestTable = tableFactory.createTable(requestModel, "REQUESTS", schema);
+			database.addSchemaObject(session, requestTable);
+
+			EssServerAppsModel appsModel = new EssServerAppsModel(service);
+			EssTable appsTable = tableFactory.createTable(appsModel, "APPLICATIONS", schema);
+			database.addSchemaObject(session, appsTable);
+
+			EssServerUsersModel usersModel = new EssServerUsersModel(service);
+			EssTable usersTable = tableFactory.createTable(usersModel, "USERS", schema);
+			database.addSchemaObject(session, usersTable);
+			
+			EssCubeInfoModel cubeInfoModel = new EssCubeInfoModel(service);
+			EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES", schema);
+			database.addSchemaObject(session, cubeInfoTable);
+
+			EssServerInfoModel serverInfoModel = new EssServerInfoModel(service);
+			EssTable serverInfoTable = tableFactory.createTable(serverInfoModel, "SERVER", schema);
+			database.addSchemaObject(session, serverInfoTable);
+
+			EssServerCustomFunctions functions = new EssServerCustomFunctions(service);
+			EssTable serverFunctionsTable = tableFactory.createTable(functions, "CUSTOM_FUNCTIONS", schema);
+			database.addSchemaObject(session, serverFunctionsTable);
+		}
+	}
+	
 	public void buildApplicationSchemas() throws EssException {
 
 	}
@@ -58,12 +107,32 @@ public class EssBuilder {
 		EssGenericPropsModel genericProps = new EssGenericPropsModel(service, service.getApplication(application));
 		EssTable genericPropsTable = tableFactory.createTable(genericProps, "PROPS", schema);
 		database.addSchemaObject(session, genericPropsTable);
-
 		
 		for (String cube : service.getCubes(application)) {
 			// need to have a way to build a lazy cube schema
-			buildCubeSchema(schema, application, cube.toUpperCase());
+			buildCubeSchema(schema, application, cube);
 		}
+		
+		List<String> scenario;
+		List<String> time;
+		List<String> years;
+		
+		scenario = Arrays.asList("Actual", "Budget");
+		time = Arrays.asList("Jan", "Feb", "Mar");
+		years = Arrays.asList("FY15", "FY16");
+		
+		List<List<String>> lists = Arrays.asList(scenario, time, years);
+		//CartesianIndex<String> ci = new CartesianIndex<String>(lists);
+
+		List<String> dimNames = Arrays.asList("Scenario", "Time", "Fiscal_Year");
+		
+		EssDataTableDefinition def = new EssDataTableDefinition();
+		def.setMembers(lists);
+		def.setDimensionNames(dimNames);
+		
+		System.out.println("Creating " + application + "_DATA_TEST");
+		EssDataTable dataTable = new EssDataTable(schema, 20000, application.toUpperCase() + "_DATA_TEST", def);
+		database.addSchemaObject(session, dataTable);
 
 	}
 
@@ -78,29 +147,77 @@ public class EssBuilder {
 	 * @throws EssException
 	 */
 	public void buildCubeSchema(Schema schema, String application, String cube) throws EssException {
-		logger.info("Building cube schema for {}.{}", application, cube);
+		logger.info("Building cube schema for {}/{}", application, cube);
 
+		String cubeUpper = cube.toUpperCase();
+		
 		EssCubeSubstitutionVariableModel variables = new EssCubeSubstitutionVariableModel(service, application, cube);
-		EssTable variableTable = tableFactory.createTable(variables, cube + "_VARS", schema);
+		EssTable variableTable = tableFactory.createTable(variables, cubeUpper + "_VARS", schema);
 		database.addSchemaObject(session, variableTable);
 
 		EssGenericPropsModel genericProps = new EssGenericPropsModel(service, service.getApplication(application).getCube(cube));
-		EssTable genericPropsTable = tableFactory.createTable(genericProps, cube + "_PROPS", schema);
+		EssTable genericPropsTable = tableFactory.createTable(genericProps, cubeUpper + "_PROPS", schema);
 		database.addSchemaObject(session, genericPropsTable);
 		
 		for (String dimension : service.getDimensions(application, cube)) {
 			EssCubeDimensionModel dimModel = new EssCubeDimensionModel(service, application, cube, dimension);
-			String tableName = cube + "_DIM_" + dimension.toUpperCase();
+			String tableName = cubeUpper + "_DIM_" + dimension.toUpperCase();
 			EssTable dimTable = tableFactory.createTable(dimModel, tableName, schema);
 			database.addSchemaObject(session, dimTable);
 		}
+		
+//		EssTempCubeDataModel dataModel = new EssTempCubeDataModel(service, application, cubeUpper);
+//		EssTable dataTable = tableFactory.createTable(dataModel, cubeUpper + "_DATA", schema);
+//		database.addSchemaObject(session, dataTable);
+		
+//		EssTempCubeDataModel2 dataModel = new EssTempCubeDataModel2(service, application, cubeUpper);
+//		EssTable dataTable = tableFactory.createTable(dataModel, cubeUpper + "_DATAX", schema);
+//		database.addSchemaObject(session, dataTable);
 
-	}
+//		logger.info("XXXX looking for {}", schema.getName());
+		
+		// none of this runs right now because the schema exists...
+		// Furthermore, this ISN'T CUBE LEVEL STUFF WHY IS IT HERE???
+		if (database.findSchema(schema.getName()) == null) {
+			logger.info("YYYY");
+			database.addDatabaseObject(session, schema);
 
-	public void buildBsoCubeSchema() {
-	}
+			EssCubeAliasTableNamesModel aliasTableModel = new EssCubeAliasTableNamesModel(service, application, cube);
+			EssTable aliasTableTable = tableFactory.createTable(aliasTableModel, application + "_" + cube + "_ALIAS_TABLES",
+					schema);
+			database.addSchemaObject(session, aliasTableTable);
 
-	public void buildAsoCubeSchema() {
+			EssOlapRequestModel requestModel = new EssOlapRequestModel(service);
+			EssTable requestTable = tableFactory.createTable(requestModel, "REQUESTS", schema);
+			database.addSchemaObject(session, requestTable);
+
+			EssServerAppsModel appsModel = new EssServerAppsModel(service);
+			EssTable appsTable = tableFactory.createTable(appsModel, "APPLICATIONS", schema);
+			database.addSchemaObject(session, appsTable);
+
+			EssServerUsersModel usersModel = new EssServerUsersModel(service);
+			EssTable usersTable = tableFactory.createTable(usersModel, "USERS", schema);
+			database.addSchemaObject(session, usersTable);
+
+			EssCubeInfoModel cubeInfoModel = new EssCubeInfoModel(service);
+			EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES", schema);
+			database.addSchemaObject(session, cubeInfoTable);
+
+			EssServerInfoModel serverInfoModel = new EssServerInfoModel(service);
+			EssTable serverInfoTable = tableFactory.createTable(serverInfoModel, "SERVER", schema);
+			database.addSchemaObject(session, serverInfoTable);
+
+			EssServerCustomFunctions functions = new EssServerCustomFunctions(service);
+			EssTable serverFunctionsTable = tableFactory.createTable(functions, "CUSTOM_FUNCTIONS", schema);
+			database.addSchemaObject(session, serverFunctionsTable);
+
+			String appDb = application.toUpperCase() + "_" + cube + "_DATA";
+			
+			EssModel dataLoadModel = service.createCubeModel(application, cube);
+			EssTable sampleFact = tableFactory.createTable(dataLoadModel, appDb, schema);
+			database.addSchemaObject(session, sampleFact);
+		}
+		
 	}
 
 }

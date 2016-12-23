@@ -94,7 +94,7 @@ public class EssDataLoadModel implements EssModel {
 
 	@Override
 	public EssResultSet get() {
-		return new ArrayListEssResultSet(Collections.emptyList(), columns.length);
+		return new ArrayListEssResultSet(Collections.<Row>emptyList(), columns.length);
 	}
 
 	@Override

@@ -16,7 +16,7 @@ public class ArrayListEssResultSet implements EssResultSet {
 	
 	/**
 	 * Reminder: columnCount is specified because it's possible that the list of rows
-	 * if empty and then we couldn't introspect it
+	 * is empty and then we couldn't introspect it
 	 * @param rows
 	 * @param columnCount
 	 */

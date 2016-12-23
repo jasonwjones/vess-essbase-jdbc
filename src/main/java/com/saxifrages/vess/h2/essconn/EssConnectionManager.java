@@ -31,11 +31,12 @@ public class EssConnectionManager {
 	 * @throws EssException
 	 */
 	private EssConnectionManager() throws EssException {
+		System.out.println("Calling IEssbase.Home");
 		essbase = IEssbase.Home.create(IEssbase.JAPI_VERSION);
 		connections = new HashMap<String, IEssOlapServer>();
 	}
 
-	/**
+	/** 
 	 * Convenience method meant to provide a backdoor strategy to get to a
 	 * connection from a static method, such as when a function/alias is used in
 	 * H2 and it's only passed a java.sql.Connection (which is more or less

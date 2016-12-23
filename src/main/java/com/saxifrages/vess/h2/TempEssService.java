@@ -16,7 +16,7 @@ public class TempEssService implements EssService {
 	private List<String[]> variables; 
 	
 	public TempEssService() {
-		variables = new ArrayList<>();
+		variables = new ArrayList<String[]>();
 	}
 	
 	@Override

@@ -15,6 +15,7 @@ public class EssCubeAliasTableEntries extends AbstractEssbaseCubeModel {
 
 	@Override
 	public EssResultSet get(IEssCube cube) throws EssException {
+		//cube.getAli
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -8,6 +8,8 @@ import org.h2.result.Row;
 import org.h2.table.Column;
 import org.h2.value.Value;
 import org.h2.value.ValueString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.essbase.api.base.EssException;
 import com.saxifrages.vess.h2.EssModel;
@@ -19,6 +21,8 @@ import com.saxifrages.vess.h2.essresults.EssResultSet;
 
 public class EssSubstitutionVariableModel implements EssModel {
 
+	private static final Logger logger = LoggerFactory.getLogger(EssSubstitutionVariableModel.class);
+	
 	private EssService service;
 
 	public Column[] getColumns() {
@@ -65,7 +69,7 @@ public class EssSubstitutionVariableModel implements EssModel {
 	}
 	
 	public void removeRealRow(Session session, Row row) {
-		
+		logger.info("Removing substitution variable row: {}", row);
 	}
 
 	public EssService getService() {

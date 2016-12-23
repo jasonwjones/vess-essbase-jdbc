@@ -36,11 +36,11 @@ public class EssTable extends Table {
 		Column[] pkColumns = getPrimaryKeyColumns(model.getColumns());
 		if (pkColumns != null) {
 			// we have uniques we can create a PK with
-			System.out.println("Added PK index to EssTable");
+			//System.out.println("Adding PK index to EssTable: PK_" + name);
 			EssIndex pkIndex = new EssIndex(this, id, "PK_" + name, IndexColumn.wrap(pkColumns), IndexType.createPrimaryKey(true, true));
 			this.indexes.add(pkIndex);
 		} else {
-			System.out.println("No PK columns on table " + name);
+			//System.out.println("No PK columns on table " + name);
 		}
 		
 		indexes.add(index);
@@ -49,11 +49,11 @@ public class EssTable extends Table {
     
     public static Column[] getPrimaryKeyColumns(Column[] columns) {
     	int countPrimaryKeyColumns = 0;
-    	System.out.println("Checking column for PK");
+    	//System.out.println("Checking column for PK");
     	for (int i = 0; i < columns.length; i++) {
     		if (columns[i].isPrimaryKey()) {
     			countPrimaryKeyColumns++;
-    			System.out.println("Found at " + i);
+    			//System.out.println("Found at " + i);
     		}
     	}
     	
@@ -162,9 +162,9 @@ public class EssTable extends Table {
 
 	}
 
+	// TODO: should be view for things that can't be changed?
 	@Override
 	public String getTableType() {
-		System.out.println("Ask table type");
 		return TABLE_TYPE;
 	}
 

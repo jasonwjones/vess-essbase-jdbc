@@ -9,6 +9,7 @@ import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssCube;
 import com.saxifrages.essbase.outline.DimensionReaderOp;
 import com.saxifrages.essbase.outline.MemberInfo;
+import com.saxifrages.vess.VessConstants;
 import com.saxifrages.vess.h2.ColumnBuilder;
 import com.saxifrages.vess.h2.EssService;
 import com.saxifrages.vess.h2.essresults.EssResultSet;
@@ -31,10 +32,22 @@ public class EssCubeDimensionModel extends AbstractEssbaseCubeModel {
 		this.readerOp = new DimensionReaderOp(this.dimension);
 		columns = new ColumnBuilder()
 			.addString("NAME")
+			.key()
+			.notNullable()
+			.precision(VessConstants.MAX_MEMBER_NAME_LENGTH)
 			.addString("PARENT_NAME")
+			.key()
+			.notNullable()
+			.precision(VessConstants.MAX_MEMBER_NAME_LENGTH)
+			.notNullable()
 			.addString("STORAGE")
+			.precision(40)
+			.notNullable()
 			.addString("CONSOLIDATION")
+			.notNullable()
+			.precision(40)
 			.addInteger("LEV")
+			.notNullable()
 			.build();
 	} 
 

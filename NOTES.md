@@ -1,4 +1,4 @@
-# Vess - Virtual Essbase JDBC Driver
+# Vess - Virtual Essbase JDBC Driver Developer Notes
 
 Also known as "It works, it works, I can't fucking believe that it actually
 fucking works."
@@ -82,21 +82,22 @@ The driver class must be loaded or otherwise on the classpath.
 
 ## Catalogs
 
-Vess is entirely contained inside of a single catalog, named VESS. 
+Vess is entirely contained inside of a single catalog, named VESS. A 
 
 ## Schemas
 
-Vess currently has three schemas: INFORMATION_SCHEMA, PUBLIC, and VESS_SCHEMA.
+Vess currently has three+ schemas: INFORMATION_SCHEMA, PUBLIC, and VESS_SCHEMA.
 The first two can be safely ignored for now, they are internal to the SQL 
 database underpinning Vess. The custom VESS_SCHEMA is populated with 
-"interesting" Vess things.
+"interesting" Vess things. Another schema will be created for the cube you connect to.
+For example, if you connect to Sample.Basic, there will be a SAMPLE schema.
 
 ## Tables
 
 Inside the VESS_SCHEMA schema resides custom tables based on the current 
 connection. A "data" table is created for the connected cube. For example, if
 the connected cube is Sample.Basic, then a table will be present inside of
-VESS_SCHEMA named SAMPLE_BASIC_DATA.
+VESS_SCHEMA named SAMPLE_BASIC_DATA (this may change in the future)
 
 Upon startup, Vess connects to the given cube and reads its non-attribute/non-
 attribute-calculation dimensions (in other words, its stored dimensions). The
@@ -301,15 +302,6 @@ column names (delimited with commas, naturally)
 	INSERT INTO VESS_SCHEMA.SAMPLE_BASIC_DATA ("Year", "Measures", "Product", "Market", "Scenario", "DATA") 
 	SELECT * FROM CSVREAD('/Users/jasonwjones/test/sample_basic_data.txt');
 	
-# Version History
-
-## 0.0.1
-
- * Initial outside release. Things work but are pretty rough.
-	
-# Other Stuff
-
-Not tested in ODI but theoretically might work.
 
 ## Can't find bundle error message
 

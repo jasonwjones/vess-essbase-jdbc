@@ -6,14 +6,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.Map;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore
 public class EssbaseUrlTest {
 
 	//private static String embeddedSampleBasic = "jdbc:essbase:embedded://admin:password@epm11123:1000/Sample.Basic;app=Sample;cube=Basic";
-	private static String embeddedSampleBasic = "jdbc:essbase://192.168.1.231:9000/Sample.Basic;app=Sample;cube=Basic";
+	private static String embeddedSampleBasic = "jdbc:essbase://192.168.1.231:9000/Sample/Basic;encoding=UTF-8";
 	
 	private static String test2 = "jdbc:essbase://192.168.1.231:9000/Sample.Basic;app=Sample;cube=Basic";
 	private EssbaseUrl url;
@@ -29,17 +27,23 @@ public class EssbaseUrlTest {
 	@Test
 	public void testParse() {
 		assertTrue(url.isEmbedded());
-		assertEquals("epm11123", url.getHostname());
+		assertEquals("192.168.1.231", url.getHostname());
 	}
 	
 	@Test
 	public void testParseProperties() {
 		Map<String, String> properties = url.getProperties();
+		assertEquals("UTF-8", properties.get("encoding"));
 	}
 
 	@Test
 	public void testAppName() {
-		System.out.println(url.getDatabase());
+		assertEquals("Sample", url.getApplication());
+	}
+	
+	@Test
+	public void testCubeName() {
+		assertEquals("Basic", url.getDatabase());
 	}
 	
 }

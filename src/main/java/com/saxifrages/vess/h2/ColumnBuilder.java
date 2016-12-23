@@ -11,11 +11,9 @@ public class ColumnBuilder {
 	private List<Column> columns;
 	
 	private Column recent;
-	
-	private int defaultStringLength = 50;
-	
+		
 	public ColumnBuilder() {
-		columns = new ArrayList<>();
+		columns = new ArrayList<Column>();
 	}
 	
 	public ColumnBuilder add(Column column) {
@@ -40,8 +38,14 @@ public class ColumnBuilder {
 		return this;
 	}
 	
+	public ColumnBuilder precision(long precision) {
+		recent.setPrecision(precision);
+		return this;
+	}
+	
 	public ColumnBuilder key() {
 		recent.setPrimaryKey(true);
+		recent.setNullable(false);
 		return this;
 	}
 	

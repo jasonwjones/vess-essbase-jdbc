@@ -33,7 +33,10 @@ public class EssGenericPropsModel extends AbstractEssbaseModel {
 		this.props = props;
 		columns = new ColumnBuilder()
 				.addString("PROPERTY_NAME")
+				.precision(255)
+				.key()
 				.addString("PROPERTY_VALUE")
+				.precision(255)
 				.build();
 	}
 

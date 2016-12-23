@@ -27,6 +27,7 @@ public class EssCubeSubstitutionVariableModel extends AbstractEssbaseCubeModel {
 
 	public EssCubeSubstitutionVariableModel(EssService service, String application, String cube) {
 		super(service, application, cube);
+		logger.info("Building sub var mapper for {}/{}", application, cube);
 		columns = new ColumnBuilder()
 				.addString("NAME")
 				.addString("VALUE")
@@ -54,12 +55,16 @@ public class EssCubeSubstitutionVariableModel extends AbstractEssbaseCubeModel {
 	public void removeRealRow(Session session, Row row) throws SQLException {
 		String name = row.getValue(0).getString();
 		String database = row.getValue(3).getString();
-
+		
+		logger.info("Searching for variable to delete {} from {}/{}", name, application, database);
 		try {
 			if (database != null && !database.isEmpty()) {
 				// it's a database specific variable
+				logger.info("Deleting cube variable {} from {}/{}", name, application, database);
 				service.deleteVariable(application, database, name);
 			} else {
+				// it's an app or server level variable
+				logger.info("Deleting app variable {}", name);
 				service.deleteVariable(application, name);
 			}
 		} catch (EssException e) {

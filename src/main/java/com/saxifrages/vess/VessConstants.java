@@ -6,4 +6,6 @@ public class VessConstants {
 	
 	private VessConstants() {}
 	
+	public static final long MAX_MEMBER_NAME_LENGTH = 80;
+	
 }

@@ -103,7 +103,7 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 	}
 
 	public String getProcedureTerm() throws SQLException {
-		return "Sprocz";
+		return "Vessproc";
 	}
 
 	public String getCatalogTerm() throws SQLException {

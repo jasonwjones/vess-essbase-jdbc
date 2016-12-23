@@ -19,6 +19,7 @@ public class EssServerAppsModel extends AbstractEssbaseServerModel {
 		super(service);
 		columns = new ColumnBuilder()
 			.add(ColConstants.APPLICATION)
+			.key()
 			.addInteger("CUBE_COUNT")
 			.addInteger("USERS_CONNECTED")
 			.addInteger("ELAPSED_TIME")
@@ -38,8 +39,7 @@ public class EssServerAppsModel extends AbstractEssbaseServerModel {
 			values[1] = ValueInt.get(app.getCountCubes());
 			values[2] = ValueInt.get(app.getCountUsersConnected());
 			values[3] = ValueInt.get(app.getElapsedAppTime());
-			values[4] = ValueInt.get(-1);
-			//values[3] = ValueInt.get(app.isAutoLoad());
+			values[4] = ValueInt.get(app.isAutoLoad() ? 1 : 0);
 		}
 	}
 

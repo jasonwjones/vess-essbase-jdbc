@@ -1,6 +1,22 @@
-Occasional build issue? 
+# Vess - Virtual Essbase JDBC Driver 
 
-Clean/install on essbase-utils, then package Vess
+## Building
+
+For a full release:
+
+ * Run clean/install on essbase-utils project
+ * Then run pack.sh on Vess to build dist and files
+
+
+## Configuring RazorSQL
+
+Driver file String (shown here as example of all files needed, adjust path as necessary):
+
+/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/vess-essbase-jdbc-0.0.1-SNAPSHOT.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/essbase-es-server-11.1.2.3.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/essbase-japi-11.1.2.3.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/essbase-utils-1.2.2.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/h2-1.4.187.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/log4j-over-slf4j-1.7.8.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/logback-classic-1.1.3.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/logback-core-1.1.3.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/odl-logging-11.1.2.3.jar;/Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/slf4j-api-1.7.9.jar
+
+
+
+## Internal Dev Notes
 
 We can recycle/subclass MetaTable into VessMetaTable, then override the generateRows
 method to bring back the custom Vess tables. Then we can manage metadata our own
@@ -21,14 +37,6 @@ Request for columns can be done on the fly and just fire up a cube if
  	If it's not, return a proper result set.
  	Do the same (intercept calls) for table columns
 
-/Users/jasonwjones/.m2/repository/com/essbase/essbase-es-server/11.1.2.3/essbase-es-server-11.1.2.3.jar
-
-/Users/jasonwjones/.m2/repository/com/essbase/essbase-japi/11.1.2.3/essbase-japi-11.1.2.3.jar
-
-/Users/jasonwjones/.m2/repository/oracle/core/ojdl/logging/odl-logging/11.1.2.3/odl-logging-11.1.2.3.jar
-
-
-/Users/jasonwjones/Development/Hyperion/essbase-jdbc/target/essbase-jdbc-0.0.1-SNAPSHOT.jar;/Users/jasonwjones/.m2/repository/com/essbase/essbase-es-server/11.1.2.3/essbase-es-server-11.1.2.3.jar;/Users/jasonwjones/.m2/repository/com/essbase/essbase-japi/11.1.2.3/essbase-japi-11.1.2.3.jar;/Users/jasonwjones/.m2/repository/oracle/core/ojdl/logging/odl-logging/11.1.2.3/odl-logging-11.1.2.3.jar;/Users/jasonwjones/.m2/repository/com/h2database/h2/1.4.187/h2-1.4.187.jar;/Users/jasonwjones/.m2/repository/org/slf4j/log4j-over-slf4j/1.7.7/log4j-over-slf4j-1.7.7.jar;/Users/jasonwjones/.m2/repository/org/slf4j/slf4j-api/1.7.7/slf4j-api-1.7.7.jar
 
 Interaction Notes with RazorSQL:
 
@@ -115,19 +123,6 @@ Build the fetch logic somewhere
 
 Beef up Jaybase so it can stub in
 
-# Essbase JDBC Virtual Driver
-
-Catalogs contain schemas (generally)
-
-Database: Sample
-Schema:   Basic
-
-Catalog: sys
-If we have a 9+ character 'system' schema then we would never have to worry
-about distinguishing it from an Application
-
-Let's just go with sys and fuck people with a database of the same name.
-
 ## Vess over In-memory Database (H2)
 
 EssAdapter:
@@ -167,41 +162,6 @@ Other connection options:
 
 
 ## Mapping JDBC Concepts to Essbase
-
-
-
-## Tables:
-
-sample_basic_data
-sample_basic_dim_time
-sample_basic_dim_product
-sample_basic_dim_cost_centers
-sample_basic_dim_time_udas
-sample_basic_attr_population
-sample_basic_alias_FOO
-
-sub_vars (name, value, app, cube, server)
-		   320, 256,   30, 30,      ?
-		   
-data (mapped per cube)
-
-has varchar columns for each dimension and a fact on the end
-
-members 
-has the normal columns, sans alias and uda (since these are one to many)
-has attribute dimension columns if needed
-member_aliases
-member_udas
-also has a variables table that is specific to that database
-also has schemas for just the app
-
-*CAN* insert into these
-		   
-		   
-database_stats
-drill urls 		   
-sessions
-member info
 
 There aren't any methods to do a dim build without a load rule, we would need
 to  use one to do a built or go into the outline one member at a time and build

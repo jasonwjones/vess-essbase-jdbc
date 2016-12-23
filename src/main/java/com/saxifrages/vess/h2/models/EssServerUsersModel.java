@@ -18,7 +18,8 @@ public class EssServerUsersModel extends AbstractEssbaseServerModel {
 	public EssServerUsersModel(EssService service) {
 		super(service);
 		columns = new ColumnBuilder()
-				.addString("USER_NAME")
+				.addString("USER_NAMEX")
+				.precision(100)
 				.key()
 				.notNullable()
 				.addLong("LAST_LOGIN_DATE")
@@ -33,7 +34,7 @@ public class EssServerUsersModel extends AbstractEssbaseServerModel {
 	public static class UserMapper implements IterMapper<IEssOlapUser> {
 		@Override
 		public void convert(IEssOlapUser user, Value[] values) throws EssException {
-			values[0] = ValueString.get(user.getName());
+			values[0] = ValueString.get(user.getName() + " foo");
 			values[1] = ValueLong.get(user.getLastLoginDate());
 		}
 	}

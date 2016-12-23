@@ -31,3 +31,14 @@
  -
  	
  	
+ ## Generating the default data model
+ 
+  - ID: Long representation of bit combinations
+  - dim1
+  - dim2
+  - dim3
+  - data value
+  - null means missing
+  
+  - default only projects level-0
+ 	

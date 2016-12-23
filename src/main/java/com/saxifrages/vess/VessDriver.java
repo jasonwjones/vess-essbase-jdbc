@@ -15,6 +15,8 @@ import com.saxifrages.vess.util.EssbaseUrl;
 
 public class VessDriver implements Driver {
 
+	//private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VessDriver.class);
+	
 	static {
 		System.out.println("Static driver registration (Vess)");
 		try {
@@ -28,13 +30,25 @@ public class VessDriver implements Driver {
 
 		DriverPropertyInfo essHome = new DriverPropertyInfo("essHome", null);
 		
+		DriverPropertyInfo persistentConfiguration = new DriverPropertyInfo("persistentConfiguration", null);
+		
 		driverProperties = new DriverPropertyInfo[] {
 			mode,
-			essHome
+			essHome,
+			persistentConfiguration
 		};
+		
+		System.out.println("Current thread class loader: " + Thread.currentThread().getContextClassLoader());
 	}
 
-	public static void main(String[] args) throws SQLException, Exception {
+	private static boolean hasAddedClassLoader = false;
+	
+	
+	public static void main(String[] args) {
+		System.out.println("Vess Virtual Essbase JDBC Driver");
+	}
+	
+	public static void main2(String[] args) throws SQLException, Exception {
 		System.out.println(null + "Foo");
 
 		//String url = "jdbc:essbase://192.168.1.231:9000/Sample.Basic;map=Sample.Basic";
@@ -52,7 +66,7 @@ public class VessDriver implements Driver {
 		//props.setProperty("MULTI_THREADED", "0");
 		EssbaseUrl essUrl = EssbaseUrl.parse(url);
 
-		VessConnection conn = new VessConnection(essUrl, props);
+		VessConnection conn = null; //new VessConnection(essUrl, props);
 		
 		ResultSet rs = conn.getMetaData().getPrimaryKeys(null, null, "USERS");
 		ResultSetTablePrinter printer = new ResultSetTablePrinter();
@@ -103,17 +117,112 @@ public class VessDriver implements Driver {
 	private static DriverPropertyInfo[] driverProperties;
 
 	public VessDriver() throws SQLException {
+		//logger.info("VessDriver initializing");
+		System.out.println("Vess init");
+		System.out.println("VD Current thread class loader: " + Thread.currentThread().getContextClassLoader());
+		System.out.println("VD Current class loader: " + getClass().getClassLoader());
 		
+		synchronized (this) {
+			System.out.println("Have added CL? " + hasAddedClassLoader);
+			if (!hasAddedClassLoader) {
+				hasAddedClassLoader = true;
+				//addClassLoader2(getClass().getClassLoader());
+		
+//		if (!hasAddedClassLoader) {
+//			addClassLoader2(getClass().getClassLoader());
+//			hasAddedClassLoader = true;
+//			System.out.println("Have added CL? " + hasAddedClassLoader);
+//		} else {
+//			System.out.println("Have already added custom class loader");
+//		}
+//		
+//		
+//		try {
+//			getClass().getClassLoader().loadClass("com.saxifrages.vess.h2vess.VessConnection");
+//		} catch (ClassNotFoundException e) {
+//			System.out.println("Couldn't load class: " + e.getMessage());
+//		}
+			}
+		}
+			
 	}
 
+//	public void addClassLoader2(ClassLoader parent) {
+//		System.out.println("adding CL to: " + parent);
+//		try {
+//			URL url[] = new URL[]{
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/essbase-es-server-11.1.2.3.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/essbase-japi-11.1.2.3.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/odl-logging-11.1.2.3.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/vess-essbase-jdbc-0.0.1-SNAPSHOT.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/slf4j-api-1.7.9.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/logback-core-1.1.3.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/logback-classic-1.1.3.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/log4j-over-slf4j-1.7.8.jar"),
+//					new URL("file:///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/h2-1.4.187.jar"),
+//
+//					///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/h2-1.4.187.jar
+//					///Users/jasonwjones/Development/Hyperion/vess-essbase-jdbc/target/dist/log4j-over-slf4j-1.7.8.jar
+//			};
+//			//Thread.currentThread().getContextClassLoader()
+//			EssClassLoader ecl = new EssClassLoader(url, parent);
+//			//getClass().getClassLoader().
+//			System.out.println("Setting thread class loader");
+//			//Thread.currentThread().setContextClassLoader(ecl);
+//			System.out.println("Loading ECL");
+//			//Class<?> clazz = ecl.loadClass("com.essbase.server.framework.EssServerFramework");
+//			
+//		} catch (MalformedURLException e) {
+//			System.out.println("Bad URL");
+////		} catch (ClassNotFoundException e) {
+////			// TODO Auto-generated catch block
+////			e.printStackTrace();
+//		}
+//		
+//	}
+	
+	/*
+	public void addClassCloader(ClassLoader parent) {
+		System.out.println("Current thread class loader: " + Thread.currentThread().getContextClassLoader());
+		System.out.println("Current class loader: " + getClass().getClassLoader());
+
+		
+		try {
+			//EssClassLoader ecl = new EssClassLoader()
+			
+//			Class<?> foo = Thread.currentThread().getContextClassLoader().loadClass("com.saxifrages.vess.h2vess.VessConnection");
+//			Class<?> iep = Thread.currentThread().getContextClassLoader().loadClass("com.essbase.api.base.IEssProperties");
+		
+//			System.out.println("Getting constructors");
+//			foo.getDeclaredConstructors();
+//			System.out.println("Got constructors");
+//			
+//			System.out.println("Class for IEssProps: " + iep.getClassLoader());
+//			System.out.println("My class loader: " + getClass().getClassLoader());
+//			System.out.println("Class for IEssProps: " + IEssProperties.class.getClassLoader());
+//			
+//			VessConnection conn = (VessConnection) foo.newInstance();
+//			System.out.println("Conn: " + conn);
+		} catch (ClassNotFoundException e) {
+			System.out.println("Class not found: " + e.getMessage());
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			System.out.println("Illegal access");
+		} catch (InstantiationException e) {
+			System.out.println("IE");
+		}
+		
+	}
+	*/
+	
 	public Connection connect(String url, Properties info) throws SQLException {
 		// JDBC drivers are cycled through to find a winner. Return null if
 		// we don't support it
 		if (!acceptsURL(url)) {
 			return null;
 		}
-		System.out.println("VessDriver connecting to: " + url);
-		EssbaseUrl essUrl = EssbaseUrl.parse(url);
+		EssbaseUrl essUrl = EssbaseUrl.parse(url, info);
 		return new VessConnection(essUrl, info);
 	}
 

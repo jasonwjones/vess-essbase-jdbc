@@ -3,6 +3,7 @@ package com.saxifrages.vess.util;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,9 +31,11 @@ public class EssbaseUrl {
 	}
 
 	public static EssbaseUrl parse(final String url) {
+		return parse(url, new Properties());
+	}
+	
+	public static EssbaseUrl parse(final String url, Properties properties) {
 
-		final String username;
-		final String password;
 		final String hostname;
 		final int port;
 		final String database;
@@ -43,6 +46,9 @@ public class EssbaseUrl {
 				.compile("^jdbc:(essbase|essbase:embedded)://((\\w+)(:(\\w*))?@)?([^/:;]+)(:(\\d+))?(/([^;]*))?(([;]+)(.+))?");
 		//.compile("^jdbc:(essbase|essbase:embedded)://((\\w+)(:(\\w*))?@)?([^/:;]+)(:(\\d+))?(/(\\w+))?");
 		final Matcher m = p.matcher(url);
+	
+		String username = properties.getProperty("user", "");
+		String password = properties.getProperty("password", "");
 		
 		if (m.find()) {
 			if (m.group(1).equals("essbase")) {
@@ -52,8 +58,15 @@ public class EssbaseUrl {
 			} else {
 				return null;
 			}
-			username = (m.group(3) == null ? "" : m.group(3));
-			password = (m.group(5) == null ? "" : m.group(5));
+			
+			if (m.group(3) != null) {
+				username = m.group(3);
+			}
+			
+			if (m.group(5) != null) {
+				password = m.group(5);
+			}
+			
 			hostname = (m.group(6) == null ? "" : m.group(6));
 			
 //			for (int i = 0; i < 20; i++) {
@@ -75,6 +88,10 @@ public class EssbaseUrl {
 				String[] appAndDb = appDb.split("\\.");
 				app = appAndDb[0];
 				db = appAndDb[1];
+			} else if (appDb.indexOf("/") != -1) {
+				String[] appAndDb = appDb.split("\\/");
+				app = appAndDb[0];
+				db = appAndDb[1];				
 			}
 			
 			params = (m.group(13)) == null ? "" : m.group(13);

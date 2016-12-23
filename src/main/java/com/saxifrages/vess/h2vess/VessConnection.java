@@ -1,5 +1,6 @@
 package com.saxifrages.vess.h2vess;
 
+import java.io.InputStream;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -16,6 +17,7 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -27,28 +29,19 @@ import org.h2.engine.Session;
 import org.h2.engine.User;
 import org.h2.jdbc.JdbcConnection;
 import org.h2.schema.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.essbase.api.base.EssException;
 import com.essbase.api.datasource.IEssOlapServer;
-import com.essbase.api.session.EssbaseProperties;
 import com.saxifrages.vess.essbuilder.EssBuilder;
-import com.saxifrages.vess.h2.EssModel;
-import com.saxifrages.vess.h2.EssTable;
 import com.saxifrages.vess.h2.EssTableFactory;
 import com.saxifrages.vess.h2.SimpleEssService;
 import com.saxifrages.vess.h2.essconn.EssConnectionManager;
-import com.saxifrages.vess.h2.models.EssCubeAliasTableNamesModel;
-import com.saxifrages.vess.h2.models.EssCubeInfoModel;
-import com.saxifrages.vess.h2.models.EssGenericPropsModel;
-import com.saxifrages.vess.h2.models.EssOlapRequestModel;
-import com.saxifrages.vess.h2.models.EssServerAppsModel;
-import com.saxifrages.vess.h2.models.EssServerUsersModel;
-import com.saxifrages.vess.h2.models.server.EssServerCustomFunctions;
-import com.saxifrages.vess.h2.models.server.EssServerInfoModel;
-import com.saxifrages.vess.h2.models.server.EssSubstitutionVariableModel;
 import com.saxifrages.vess.util.EssbaseUrl;
 
 public class VessConnection implements Connection {
+
+	private static final Logger logger = LoggerFactory.getLogger(VessConnection.class);
 
 	private IEssOlapServer server;
 
@@ -57,21 +50,35 @@ public class VessConnection implements Connection {
 	private Properties info;
 
 	private ConnectionInfo connInfo;
-	
+
 	private VessDatabaseMetaData metaData;
 
+	private DatabaseObjectAdder objectAdder;
+
+	public VessConnection() {
+		logger.info("Simple init in VessConn");
+	}
+
 	public VessConnection(EssbaseUrl essUrl, Properties info) throws SQLException {
+		logger.info("Inside VessConnection");
+		System.out.println("Locale is: " + Locale.getDefault());
 		try {
 			this.info = info;
-			String username = info.getProperty("user");
-			String password = info.getProperty("password");
+			// String username = info.getProperty("user");
+			// String password = info.getProperty("password");
+			String username = essUrl.getUsername();
+			String password = essUrl.getPassword();
 
-			// System.setProperty("ESS_ES_HOME", "/Users/jasonwjones/test");
+			Map<String, String> urlProperties = essUrl.getProperties();
+			logger.info("Additional properties: {}", urlProperties);
+			
+			InputStream inputStream = null;
+			ClassLoader classLoader = this.getClass().getClassLoader();
+			inputStream = classLoader.getResourceAsStream("essbase.properties");
 
-			System.out.println("Using server class loader: " + EssbaseProperties.useServerClassLoader());
+			System.out.println("Input stream: " + inputStream);
 
 			System.out.println("Initializing Essbase Java API");
-
 			EssConnectionManager connManager = EssConnectionManager.getInstance();
 
 			System.out.println("Connecting to URL: " + essUrl);
@@ -79,6 +86,7 @@ public class VessConnection implements Connection {
 			server = connManager.getServer(essUrl.getHostname(), username, password);
 
 			System.out.println("Signing on to " + essUrl.getHostname() + " using " + username + "/" + password);
+
 			System.out.println("Is connected: " + server.isConnected());
 
 			SimpleEssService service = new SimpleEssService(server);
@@ -101,101 +109,59 @@ public class VessConnection implements Connection {
 			user.setSaltAndHash(new byte[] { 8, 2 }, new byte[] { 1, 7 });
 			Schema schema = new Schema(database, 1001, "VESS_SCHEMA", user, false);
 			EssTableFactory tableFactory = new EssTableFactory(2000);
-			
-			EssSubstitutionVariableModel variableModel = new EssSubstitutionVariableModel();
-			variableModel.setService(service);
+
+//			EssSubstitutionVariableModel variableModel = new EssSubstitutionVariableModel();
+//			variableModel.setService(service);
+
+//			DatabaseObjectAdder objectAdder = new DatabaseObjectAdder(database, session);
 
 			// Server properties
-			EssGenericPropsModel genericProps = new EssGenericPropsModel(service, service.getServer());
-			EssTable genericPropsTable = tableFactory.createTable(genericProps, "PROPS", schema);
-			database.addSchemaObject(session, genericPropsTable);
+//			EssGenericPropsModel genericProps = new EssGenericPropsModel(service, service.getServer());
+//			EssTable genericPropsTable = tableFactory.createTable(genericProps, "PROPS", schema);
+			// objectAdder.add(genericPropsTable);
 
-			
+			// if (database.getAllS)
+
+			// database.addSchemaObject(session, genericPropsTable);
+
 			if (database.findUser(user.getName()) == null) {
 				database.addDatabaseObject(session, user);
 			}
 
-			String app = essUrl.getApplication().toUpperCase();
-			String db = essUrl.getDatabase().toUpperCase();
-			String appDb = app + "_" + db + "_DATA";
+			String app = essUrl.getApplication();
 
 			EssBuilder essBuilder = new EssBuilder(service, session, tableFactory, database);
-			
+
 			int schemaId = 3000;
 			for (String application : Arrays.asList(app)) {
 				Schema appSchema = new Schema(database, schemaId, application.toUpperCase(), user, false);
 				schemaId += 1000;
 
-				// We add the schema so that it shows as part of the database (catalog) metadata
+				// We add the schema so that it shows as part of the database
+				// (catalog) metadata
 				// but we want the other stuff to be populated on demand
 				if (database.findSchema(appSchema.getName()) == null) {
-					System.out.println("Adding Sample");
+					logger.info("Adding app {}", app);
 					database.addDatabaseObject(session, appSchema);
 					essBuilder.buildApplicationSchema(appSchema, application);
+					
 				}
 
 			}
-			
-			//Schema sampleSchema = new Schema(database, 3001, "SAMPLE", user, false);
-						
-			///////////
-			
-			if (database.findSchema(schema.getName()) == null) {
-				database.addDatabaseObject(session, schema);
 
-				EssTable variableTable = tableFactory.createTable(variableModel, "VARS", schema);
-				database.addSchemaObject(session, variableTable);
-
-				EssCubeAliasTableNamesModel aliasTableModel = new EssCubeAliasTableNamesModel(service, app, db);
-				EssTable aliasTableTable = tableFactory.createTable(aliasTableModel, app + "_" + db + "_ALIAS_TABLES", schema);
-				database.addSchemaObject(session, aliasTableTable);
-
-				EssOlapRequestModel requestModel = new EssOlapRequestModel(service);
-				EssTable requestTable = tableFactory.createTable(requestModel, "REQUESTS", schema);
-				database.addSchemaObject(session, requestTable);
-
-				EssServerAppsModel appsModel = new EssServerAppsModel(service);
-				EssTable appsTable = tableFactory.createTable(appsModel, "APPLICATIONS", schema);
-				database.addSchemaObject(session, appsTable);
-
-				EssServerUsersModel usersModel = new EssServerUsersModel(service);
-				EssTable usersTable = tableFactory.createTable(usersModel, "USERS", schema);
-				
-				database.addSchemaObject(session, usersTable);
-				//database.addSchemaObject(session, usersTable.getPrimaryKey());
-
-//				EssGenericPropsModel serverPropsModel = new EssGenericPropsModel(service);
-//				EssTable genericPropsTable = tableFactory.createTable(serverPropsModel, "TEST_PROPS", schema);
-//				database.addSchemaObject(session, genericPropsTable);
-
-				EssCubeInfoModel cubeInfoModel = new EssCubeInfoModel(service);
-				EssTable cubeInfoTable = tableFactory.createTable(cubeInfoModel, "CUBES", schema);
-				database.addSchemaObject(session, cubeInfoTable);
-
-				EssServerInfoModel serverInfoModel = new EssServerInfoModel(service);
-				EssTable serverInfoTable = tableFactory.createTable(serverInfoModel, "SERVER", schema);
-				database.addSchemaObject(session, serverInfoTable);
-
-				EssServerCustomFunctions functions = new EssServerCustomFunctions(service);
-				EssTable serverFunctionsTable = tableFactory.createTable(functions, "CUSTOM_FUNCTIONS", schema);
-				database.addSchemaObject(session, serverFunctionsTable);
-				
-				try {
-					EssModel dataLoadModel = service.createCubeModel(essUrl.getApplication(), essUrl.getDatabase());
-					EssTable sampleFact = tableFactory.createTable(dataLoadModel, appDb, schema);
-					database.addSchemaObject(session, sampleFact);
-
-				} catch (EssException e) {
-					throw new SQLException("Essbase exception: " + e.getMessage(), e);
-				}
-			}
+			essBuilder.buildServerSchema(schema);
 
 			// also has a constructor that takes a ConncetionInfo object
 			h2Connection = new JdbcConnection(session, "sa", "foo");
 			metaData = new VessDatabaseMetaData(h2Connection.getMetaData());
-		} catch (EssException e) {
+			
+			// TODO: this should be getting called in something else to ensure cleanup happens
+			server.clearActive();
+		} catch (Exception e) {
+			System.out.println("Issue with establishing VessConnection: " + e.getMessage());
 			throw new SQLException("Error connecting to Essbase: " + e.getMessage(), e);
 		}
+
 	}
 
 	@Override
@@ -233,6 +199,7 @@ public class VessConnection implements Connection {
 				server.disconnect();
 				server = null;
 			}
+
 			// if (essbase != null) {
 			// essbase.signOff();
 			// essbase = null;
@@ -255,7 +222,7 @@ public class VessConnection implements Connection {
 			// dropUser.executeUpdate();
 			// System.out.println("Dropped admin user");
 
-		} catch (EssException e) {
+		} catch (Exception e) {
 			System.out.println("Error signing off of Essbase: " + e.getMessage());
 
 		}
@@ -271,6 +238,8 @@ public class VessConnection implements Connection {
 		// h2Connection.close();
 	}
 
+	///
+	
 	@Override
 	protected void finalize() throws Throwable {
 		System.out.println("Finalizer called");
