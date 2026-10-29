@@ -22,11 +22,12 @@ import com.jasonwjones.hyperion.vess.outline.Outline;
 /**
  * A dimension as a table: a row for each member, as a star schema would have
  * it. Besides each member's name, alias, parent, level and generation, it has
- * a column for each generation, holding the member's ancestor there, so that
- * values can be grouped by Category or by Region; and a column for each
+ * a column for each generation between the dimension and the deepest, holding
+ * the member's ancestor there, so that values can be grouped by Category or by
+ * Region; and a column for each
  * attribute dimension that describes it, holding the member's attribute with
  * its proper type. The alias is from one alias table, the connection's choice;
- * ALIASES has the rest. Shared members are in MEMBERS rather than here, so
+ * ALIASES has the rest, and UDAS has the members' user-defined attributes. Shared members are in MEMBERS rather than here, so
  * each name is one row.
  */
 public final class DimensionTable extends VessTable {
@@ -113,8 +114,6 @@ public final class DimensionTable extends VessTable {
 		add(list, getters, taken, Column.text("CONSOLIDATION", 1).remarks("How it adds into its parent: +, -, *, /, %, ~ or ^"),
 				Member::getConsolidation);
 		add(list, getters, taken, Column.text("FORMULA", TEXT), Member::getFormula);
-		add(list, getters, taken, Column.text("UDAS", TEXT).remarks("Its user-defined attributes, separated by commas"),
-				member -> member.getUdas().isEmpty() ? null : String.join(", ", member.getUdas()));
 		if (dimension.getType().equals(Dimension.ACCOUNTS)) {
 			add(list, getters, taken, Column.text("TIME_BALANCE", 10).remarks("First, Last or Average"), Member::getTimeBalance);
 			add(list, getters, taken, Column.text("VARIANCE_REPORTING", 10).remarks("Expense, for an expense"), Member::getVarianceReporting);
@@ -123,9 +122,10 @@ public final class DimensionTable extends VessTable {
 		add(list, getters, taken, Column.integer("CHILDREN").notNull(), member -> member.getChildren().size());
 		add(list, getters, taken, Column.integer("OUTLINE_ORDER").notNull().remarks("Sort by it for the outline's order"), Member::getOrder);
 
-		// The ancestor at each generation below the dimension itself
+		// The ancestor at each generation below the dimension itself and
+		// above the deepest, whose column would only ever repeat NAME
 		int generations = dimension.getGenerations();
-		for (int generation = 2; generation <= generations; generation++) {
+		for (int generation = 2; generation < generations; generation++) {
 			String named = dimension.getGenerationName(generation);
 			String columnName = naming.unique(taken, named != null ? named : "GEN" + generation, "Generation");
 			int number = generation;

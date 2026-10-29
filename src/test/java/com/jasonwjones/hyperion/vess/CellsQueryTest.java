@@ -2,6 +2,7 @@ package com.jasonwjones.hyperion.vess;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.SQLException;
@@ -151,9 +152,9 @@ class CellsQueryTest {
 
 	@Test
 	void showsDimensionsAsTables() throws SQLException {
-		List<List<Object>> rows = engine.query("select NAME, ALIAS, CATEGORY, PRODUCT_SKU, CAFFEINATED, OUNCES, INTRO_DATE, LEVEL"
+		List<List<Object>> rows = engine.query("select NAME, ALIAS, CATEGORY, CAFFEINATED, OUNCES, INTRO_DATE, LEVEL"
 				+ " from DIM_PRODUCT where NAME = '100-30'");
-		assertEquals(List.of(List.of("100-30", "Caffeine Free Cola", "100", "100-30", false, 16.0, java.sql.Date.valueOf("1996-04-01"), 0)), rows);
+		assertEquals(List.of(List.of("100-30", "Caffeine Free Cola", "100", false, 16.0, java.sql.Date.valueOf("1996-04-01"), 0)), rows);
 		assertEquals(List.of(List.of(19L)), engine.query("select count(*) from dim_product"), "shared members aren't repeated");
 		assertEquals(List.of(List.of("Central"), List.of("East"), List.of("South"), List.of("West")),
 				engine.query("select NAME from DIM_MARKET where IS_CHILD(NAME, 'Market') order by NAME"));
@@ -161,10 +162,21 @@ class CellsQueryTest {
 
 	@Test
 	void hasOneAliasColumn() throws SQLException {
-		assertEquals(List.of("NAME", "ALIAS", "PARENT", "LEVEL", "GENERATION", "STORAGE", "CONSOLIDATION", "FORMULA", "UDAS", "CHILDREN",
-				"OUTLINE_ORDER", "CATEGORY", "PRODUCT_SKU", "CAFFEINATED", "OUNCES", "PKG_TYPE", "INTRO_DATE"),
-				engine.columns("select * from DIM_PRODUCT"));
+		assertEquals(List.of("NAME", "ALIAS", "PARENT", "LEVEL", "GENERATION", "STORAGE", "CONSOLIDATION", "FORMULA", "CHILDREN", "OUTLINE_ORDER",
+				"CATEGORY", "CAFFEINATED", "OUNCES", "PKG_TYPE", "INTRO_DATE"), engine.columns("select * from DIM_PRODUCT"));
 		assertEquals(List.of(List.of("Cola")), engine.query("select ALIAS from DIM_PRODUCT where NAME = '100-10'"));
+	}
+
+	@Test
+	void hasAColumnForEachGenerationAboveTheDeepest() throws SQLException {
+		// The deepest generation's column would only repeat NAME
+		assertEquals(List.of("NAME", "ALIAS", "PARENT", "LEVEL", "GENERATION", "STORAGE", "CONSOLIDATION", "FORMULA", "CHILDREN", "OUTLINE_ORDER"),
+				engine.columns("select * from DIM_CAFFEINATED"));
+		assertTrue(engine.columns("select * from DIM_MEASURES").containsAll(List.of("GEN2", "GEN3")));
+		assertFalse(engine.columns("select * from DIM_MEASURES").contains("GEN4"));
+		assertEquals(List.of(List.of("Medium")), engine.query("select POPULATION_GROUP from DIM_POPULATION where NAME = '9000000'"));
+		SQLException typo = assertThrows(SQLException.class, () -> engine.query("select GEN9 from DIM_POPULATION"));
+		assertTrue(typo.getMessage().contains("Column 'GEN9' not found"), typo.getMessage());
 	}
 
 	@Test

@@ -134,6 +134,7 @@ public class LiveServerTest {
 	public void readsTheOutline() throws SQLException {
 		assertEquals(List.of(List.of("100", "Colas")), query("select PARENT, MEMBER_ALIAS(PARENT) from DIM_PRODUCT where NAME = ?", "100-10"));
 		assertEquals(List.of(List.of(13L)), query("select count(*) from DIM_PRODUCT where LEVEL = 0"));
+		assertTrue(query("select MEMBER from UDAS where DIMENSION = 'Market' and UDA = 'Major Market'").contains(List.of("New York")));
 	}
 
 	@Test

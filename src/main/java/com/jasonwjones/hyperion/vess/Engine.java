@@ -22,7 +22,10 @@ import com.jasonwjones.hyperion.vess.schema.VessModel;
  * Names are matched without regard to case, as Essbase matches them, and keep
  * the case they're written in. Double quotes quote a name. The lenient parser
  * is used because the names Essbase cubes are full of - Year, Time, Period,
- * Value - are words standard SQL reserves.
+ * Value - are words standard SQL reserves. Validation is lenient too, so a
+ * query can group or sort by an alias, but not as lenient as the parser's own
+ * conformance, which reads an unknown column as an alias of itself and says
+ * so instead of that the column isn't there.
  */
 final class Engine {
 
@@ -36,7 +39,7 @@ final class Engine {
 		info.setProperty("quotedCasing", Casing.UNCHANGED.name());
 		info.setProperty("caseSensitive", "false");
 		info.setProperty("parserFactory", SqlBabelParserImpl.class.getName() + "#FACTORY");
-		info.setProperty("conformance", SqlConformanceEnum.BABEL.name());
+		info.setProperty("conformance", SqlConformanceEnum.LENIENT.name());
 		Connection connection = new org.apache.calcite.jdbc.Driver().connect("jdbc:calcite:", info);
 		if (connection == null) {
 			throw new VessException("Could not start the SQL engine");
@@ -48,7 +51,7 @@ final class Engine {
 	 * The parser's settings, for the statements Vess reads itself.
 	 */
 	static SqlParser.Config parserConfig() {
-		return SqlParser.config().withParserFactory(SqlBabelParserImpl.FACTORY).withConformance(SqlConformanceEnum.BABEL)
+		return SqlParser.config().withParserFactory(SqlBabelParserImpl.FACTORY).withConformance(SqlConformanceEnum.LENIENT)
 				.withQuoting(Quoting.DOUBLE_QUOTE).withUnquotedCasing(Casing.UNCHANGED).withQuotedCasing(Casing.UNCHANGED)
 				.withCaseSensitive(false);
 	}

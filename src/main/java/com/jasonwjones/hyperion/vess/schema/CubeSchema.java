@@ -44,7 +44,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 
 	/** The cube's own tables, whose names a dimension's table gives way to */
 	static final Set<String> TABLES = Set.of("CELLS", "FACTS", "DIMENSIONS", "MEMBERS", "GENERATIONS", "LEVELS", "ALIAS_TABLES", "ALIASES",
-			"VARIABLES", "SCRIPTS", "DRILLTHROUGHS", "LOCKS", "SESSIONS", "SCENARIOS");
+			"UDAS", "VARIABLES", "SCRIPTS", "DRILLTHROUGHS", "LOCKS", "SESSIONS", "SCENARIOS");
 
 	private final ServerContext context;
 
@@ -169,8 +169,8 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	 */
 	private synchronized List<VessTable> fixedTables() {
 		if (fixedTables == null) {
-			fixedTables = List.of(dimensions(), members(), generations(false), generations(true), aliasTables(), aliases(), new Variables(),
-					new Scripts(), drillthroughs(), new Locks(), new Sessions(), scenarios());
+			fixedTables = List.of(dimensions(), members(), generations(false), generations(true), aliasTables(), aliases(), udas(),
+					new Variables(), new Scripts(), drillthroughs(), new Locks(), new Sessions(), scenarios());
 		}
 		return fixedTables;
 	}
@@ -231,7 +231,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 						Column.text("ALIAS", MEMBER_NAME), Column.text("PARENT", MEMBER_NAME), Column.integer("LEVEL").notNull(),
 						Column.integer("GENERATION").notNull(), Column.text("STORAGE", 25), Column.text("CONSOLIDATION", 1),
 						Column.bool("SHARED").notNull(), Column.text("BASE_MEMBER", MEMBER_NAME).remarks("For a shared member, the member it shares"),
-						Column.text("FORMULA", TEXT), Column.text("UDAS", TEXT), Column.text("TIME_BALANCE", 10),
+						Column.text("FORMULA", TEXT), Column.text("TIME_BALANCE", 10),
 						Column.text("VARIANCE_REPORTING", 10), Column.bool("TWO_PASS"), Column.integer("CHILDREN").notNull()),
 				List.of("OUTLINE_ORDER"), conditions -> {
 					Outline outline = outline();
@@ -246,8 +246,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 							rows.add(new Object[] { member.getOrder(), dimension.getName(), member.getName(), member.getAlias(aliasTable),
 									member.getParent() == null ? null : member.getParent().getName(), member.getLevel(), member.getGeneration(),
 									member.getStorage(), member.getConsolidation(), member.isShared(), member.getBaseMember(), member.getFormula(),
-									member.getUdas().isEmpty() ? null : String.join(", ", member.getUdas()), member.getTimeBalance(),
-									member.getVarianceReporting(), member.isTwoPass(), member.getChildren().size() });
+									member.getTimeBalance(), member.getVarianceReporting(), member.isTwoPass(), member.getChildren().size() });
 						}
 					}
 					return rows;
@@ -300,6 +299,27 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 						for (Member member : dimension.getBaseMembers()) {
 							for (Map.Entry<String, String> alias : member.getAliases().entrySet()) {
 								rows.add(new Object[] { dimension.getName(), member.getName(), alias.getKey(), alias.getValue() });
+							}
+						}
+					}
+					return rows;
+				});
+	}
+
+	private VessTable udas() {
+		return new ListTable("UDAS", "Each member's user-defined attributes, a row each",
+				List.of(Column.text("DIMENSION", MEMBER_NAME).notNull(), Column.text("MEMBER", MEMBER_NAME).notNull(),
+						Column.text("UDA", MEMBER_NAME).notNull()),
+				List.of("MEMBER", "UDA"), conditions -> {
+					Set<String> wanted = conditions.values(0);
+					List<Object[]> rows = new ArrayList<>();
+					for (Dimension dimension : outline().getDimensions()) {
+						if (wanted != null && !wanted.contains(dimension.getName())) {
+							continue;
+						}
+						for (Member member : dimension.getBaseMembers()) {
+							for (String uda : member.getUdas()) {
+								rows.add(new Object[] { dimension.getName(), member.getName(), uda });
 							}
 						}
 					}

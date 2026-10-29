@@ -139,11 +139,12 @@ Server.
 | --- | --- |
 | `CELLS` | Every value in the cube, at every level, totals and dynamic calculations included: a column for each dimension and `VALUE` |
 | `FACTS` | The values loaded at level 0 of each dimension: the cube as a fact table |
-| `DIM_` and each dimension | Its members, a row each, in `DIM_PRODUCT` for Product: name, alias, parent, level, generation, storage, consolidation, formula and UDAs; a column for each generation, holding the member's ancestor there; and a column for each attribute, typed as a boolean, number, date or text. The alias is from one alias table; `ALIASES` has the others |
+| `DIM_` and each dimension | Its members, a row each, in `DIM_PRODUCT` for Product: name, alias, parent, level, generation, storage, consolidation and formula; a column for each generation between the dimension and the deepest, holding the member's ancestor there, such as `CATEGORY`; and a column for each attribute, typed as a boolean, number, date or text. The alias is from one alias table; `ALIASES` has the others |
 | `DIMENSIONS` | Each dimension: type, dense or sparse, members, generations, levels |
 | `MEMBERS` | Every member of every dimension where it sits in the outline, shared members included |
 | `GENERATIONS`, `LEVELS` | Each dimension's generations and levels, with their names |
 | `ALIAS_TABLES`, `ALIASES` | The alias tables, and every alias in every one |
+| `UDAS` | Each member's user-defined attributes, a row each |
 | `VARIABLES` | The substitution variables the cube sees, at every scope, with `IN_EFFECT` false where a narrower one hides a variable. Insert, update and delete them |
 | `SCRIPTS` | Calc and MDX scripts. Insert them, change `CONTENT` to save one, delete them |
 | `DRILLTHROUGHS` | Drill-through definitions |
