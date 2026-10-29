@@ -118,7 +118,7 @@ final class Calls {
 
 	/**
 	 * The procedure a name means: in full, Application.Cube.Procedure or
-	 * Essbase.Server.Procedure; or within the cube or application the
+	 * ESSBASE.SERVER.Procedure; or within the cube or application the
 	 * connection is working in; or the server's.
 	 */
 	static Procedure find(VessConnection connection, List<String> names) throws SQLException {

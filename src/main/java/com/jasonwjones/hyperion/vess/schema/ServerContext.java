@@ -96,7 +96,7 @@ public final class ServerContext {
 	 */
 	public record Settings(Duration outlineCache, long chunkCells, int chunkMembers, String serverCatalog, boolean browseStopped) {
 
-		public static final Settings DEFAULTS = new Settings(Duration.ofMinutes(5), 500_000, 2_000, "Essbase", false);
+		public static final Settings DEFAULTS = new Settings(Duration.ofMinutes(5), 500_000, 2_000, "ESSBASE", false);
 
 	}
 

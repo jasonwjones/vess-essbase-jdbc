@@ -13,7 +13,7 @@ import java.util.Map;
  * </pre>
  *
  * The application and cube, if given, are where unqualified names are looked
- * for, so that a query can say Cells rather than Sample.Basic.Cells.
+ * for, so that a query can say CELLS rather than Sample.Basic.CELLS.
  */
 public final class VessUrl {
 

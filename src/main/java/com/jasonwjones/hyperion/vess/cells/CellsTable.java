@@ -24,8 +24,8 @@ import com.jasonwjones.hyperion.vess.schema.VessTable;
  * it, and the value, a row for every value the cube has.
  *
  * <p>
- * Cells has every member of every dimension, at every level, so it holds the
- * cube's totals and dynamic calculations as well as what was loaded. Facts has
+ * CELLS has every member of every dimension, at every level, so it holds the
+ * cube's totals and dynamic calculations as well as what was loaded. FACTS has
  * only the stored members at level 0 of each, which is what was loaded: a fact
  * table, whose values add up the way a SQL GROUP BY expects. Shared members
  * aren't repeated in either, and a cell that's #Missing isn't a row.
@@ -130,7 +130,7 @@ public final class CellsTable extends VessTable {
 
 	/**
 	 * Each dimension's members before any conditions: all of them that aren't
-	 * shared, or for Facts, those stored at level 0.
+	 * shared, or for FACTS, those stored at level 0.
 	 */
 	private List<List<Member>> domains(List<Dimension> dimensions) {
 		List<List<Member>> domains = new ArrayList<>();
@@ -247,7 +247,7 @@ public final class CellsTable extends VessTable {
 			}
 			if (facts && !(member.isLeaf() && member.isStored())) {
 				throw new VessException(member.getName() + " isn't a stored member at level 0 of " + dimension.getName()
-						+ ", so it isn't in " + getName() + "; write it through Cells");
+						+ ", so it isn't in " + getName() + "; write it through CELLS");
 			}
 			if (!member.isStored()) {
 				// Essbase would take the value and keep nothing

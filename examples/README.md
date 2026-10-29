@@ -9,11 +9,11 @@ page, whenever the tests run against a server. They only read.
 
 ## The cube's dimensions ([01-dimensions.sql](01-dimensions.sql))
 
-Every cube is a schema, and Dimensions is one of its tables: what each dimension is, how big, and how deep. The attribute dimensions are there too; this leaves them out.
+Every cube is a schema, and DIMENSIONS is one of its tables: what each dimension is, how big, and how deep. The attribute dimensions are there too; this leaves them out.
 
 ```
 SELECT NAME, TYPE, DENSITY, MEMBERS, STORED_MEMBERS, GENERATIONS, LEVELS
-FROM Sample.Basic.Dimensions
+FROM Sample.Basic.DIMENSIONS
 WHERE TYPE <> 'Attribute'
 ORDER BY NUMBER
 ```
@@ -63,17 +63,17 @@ ORDER BY OUTLINE_ORDER
 
 ## One value ([03-one-value.sql](03-one-value.sql))
 
-Cells holds every value in the cube, with a column for each dimension. Name a member of each and you have one cell. Vess turns the conditions into the MDX that reads just that.
+CELLS holds every value in the cube, with a column for each dimension. Name a member of each and you have one cell. Vess turns the conditions into the MDX that reads just that.
 
 ```
-SELECT Value
-FROM Sample.Basic.Cells
+SELECT VALUE
+FROM Sample.Basic.CELLS
 WHERE Year = 'Jan' AND Measures = 'Sales' AND Product = '100-10' AND Market = 'New York' AND Scenario = 'Actual'
 ```
 
 ```
 +-------+
-| Value |
+| VALUE |
 +-------+
 | 678.0 |
 +-------+
@@ -81,17 +81,17 @@ WHERE Year = 'Jan' AND Measures = 'Sales' AND Product = '100-10' AND Market = 'N
 
 ## Totals and calculations ([04-totals-and-calculations.sql](04-totals-and-calculations.sql))
 
-Cells has members at every level, so it answers with Essbase's own totals and dynamic calculations: here a quarter, a region and a product family, for every scenario, Variance and Variance % included.
+CELLS has members at every level, so it answers with Essbase's own totals and dynamic calculations: here a quarter, a region and a product family, for every scenario, Variance and Variance % included.
 
 ```
-SELECT Scenario, Value
-FROM Sample.Basic.Cells
+SELECT Scenario, VALUE
+FROM Sample.Basic.CELLS
 WHERE Year = 'Qtr1' AND Measures = 'Sales' AND Product = '100' AND Market = 'East'
 ```
 
 ```
 +------------+-------------------+
-| Scenario   | Value             |
+| Scenario   | VALUE             |
 +------------+-------------------+
 | Scenario   | 6292.0            |
 | Actual     | 6292.0            |
@@ -103,11 +103,11 @@ WHERE Year = 'Qtr1' AND Measures = 'Sales' AND Product = '100' AND Market = 'Eas
 
 ## The cube as a fact table ([05-facts-by-attribute.sql](05-facts-by-attribute.sql))
 
-Facts holds just the values loaded at level 0, so they add up the way SQL expects. Joined to the Product table, they can be grouped by anything it has: here by category and whether the drink has caffeine.
+FACTS holds just the values loaded at level 0, so they add up the way SQL expects. Joined to the Product table, they can be grouped by anything it has: here by category and whether the drink has caffeine.
 
 ```
-SELECT p.Category, p.Caffeinated, SUM(f.Value) AS Sales
-FROM Sample.Basic.Facts f
+SELECT p.Category, p.Caffeinated, SUM(f.VALUE) AS Sales
+FROM Sample.Basic.FACTS f
 JOIN Sample.Basic.Product p ON f.Product = p.NAME
 WHERE f.Measures = 'Sales' AND f.Scenario = 'Actual'
 GROUP BY p.Category, p.Caffeinated
@@ -132,8 +132,8 @@ ORDER BY p.Category, p.Caffeinated
 Functions such as IS_DESCENDANT, IS_CHILD and HAS_UDA answer from the outline. In a WHERE clause they narrow what's read, since Vess tries each against the members first. Diet shares products from other families, and they count as under it.
 
 ```
-SELECT Product, MEMBER_ALIAS(Product) AS Alias, SUM(Value) AS Sales
-FROM Sample.Basic.Facts
+SELECT Product, MEMBER_ALIAS(Product) AS Alias, SUM(VALUE) AS Sales
+FROM Sample.Basic.FACTS
 WHERE IS_DESCENDANT(Product, 'Diet') AND HAS_UDA(Market, 'Major Market')
   AND Measures = 'Sales' AND Scenario = 'Actual'
 GROUP BY Product
@@ -157,9 +157,9 @@ All of SQL is there once the values are rows. Here each region's best-selling pr
 ```
 SELECT Region, Product, Sales
 FROM (
-  SELECT m.Region, f.Product, SUM(f.Value) AS Sales,
-         RANK() OVER (PARTITION BY m.Region ORDER BY SUM(f.Value) DESC) AS Place
-  FROM Sample.Basic.Facts f
+  SELECT m.Region, f.Product, SUM(f.VALUE) AS Sales,
+         RANK() OVER (PARTITION BY m.Region ORDER BY SUM(f.VALUE) DESC) AS Place
+  FROM Sample.Basic.FACTS f
   JOIN Sample.Basic.Market m ON f.Market = m.NAME
   WHERE f.Measures = 'Sales' AND f.Scenario = 'Actual'
   GROUP BY m.Region, f.Product
@@ -185,9 +185,9 @@ Scenarios side by side, the way a report wants them, by turning rows into column
 
 ```
 SELECT Market,
-       SUM(CASE WHEN Scenario = 'Actual' THEN Value END) AS Actual,
-       SUM(CASE WHEN Scenario = 'Budget' THEN Value END) AS Budget
-FROM Sample.Basic.Cells
+       SUM(CASE WHEN Scenario = 'Actual' THEN VALUE END) AS Actual,
+       SUM(CASE WHEN Scenario = 'Budget' THEN VALUE END) AS Budget
+FROM Sample.Basic.CELLS
 WHERE Year = 'Year' AND Measures = 'Sales' AND Product = 'Product'
   AND IS_CHILD(Market, 'Market')
 GROUP BY Market
@@ -207,11 +207,11 @@ ORDER BY Market
 
 ## Where members are shared ([09-shared-members.sql](09-shared-members.sql))
 
-The dimension tables have each member once. Members has every place each one sits, shared ones included, which shows Diet's alternate hierarchy.
+The dimension tables have each member once. MEMBERS has every place each one sits, shared ones included, which shows Diet's alternate hierarchy.
 
 ```
 SELECT NAME, PARENT, SHARED, BASE_MEMBER, STORAGE
-FROM Sample.Basic.Members
+FROM Sample.Basic.MEMBERS
 WHERE DIMENSION = 'Product' AND (SHARED OR NAME = 'Diet')
 ORDER BY OUTLINE_ORDER
 ```
@@ -229,11 +229,11 @@ ORDER BY OUTLINE_ORDER
 
 ## Every alias table ([10-aliases.sql](10-aliases.sql))
 
-Each alias table is a column of the dimension's table; Aliases has them all as rows, for when they're wanted together. Here are four of Sample.Basic's six.
+Each alias table is a column of the dimension's table; ALIASES has them all as rows, for when they're wanted together. Here are four of Sample.Basic's six.
 
 ```
 SELECT MEMBER, ALIAS_TABLE, ALIAS
-FROM Sample.Basic.Aliases
+FROM Sample.Basic.ALIASES
 WHERE MEMBER IN ('100-10', 'Qtr1') AND ALIAS_TABLE IN ('Default', 'Long Names', 'GermanNames', 'RussianNames')
 ORDER BY MEMBER, ALIAS_TABLE
 ```
@@ -253,11 +253,11 @@ ORDER BY MEMBER, ALIAS_TABLE
 
 ## Calc scripts ([11-calc-scripts.sql](11-calc-scripts.sql))
 
-Scripts holds the cube's calc and MDX scripts, text and all; here each line break is shown as a space. Updating CONTENT saves a script, and each calc script is also a procedure: CALL Sample.Basic.CalcAll() runs this one.
+SCRIPTS holds the cube's calc and MDX scripts, text and all; here each line break is shown as a space. Updating CONTENT saves a script, and each calc script is also a procedure: CALL Sample.Basic.CalcAll() runs this one.
 
 ```
 SELECT TYPE, NAME, TRIM(REPLACE(CONTENT, U&'\000A', ' ')) AS CONTENT
-FROM Sample.Basic.Scripts
+FROM Sample.Basic.SCRIPTS
 WHERE TYPE = 'Calc'
 ```
 
@@ -293,11 +293,11 @@ WHERE ([Sales], [Actual], [Product])
 
 ## What the server knows ([13-mdx-functions.sql](13-mdx-functions.sql))
 
-The server's own tables are in Essbase.Server: applications, cubes, sessions, users, jobs, logs, and the MDX functions it understands, with their syntax.
+The server's own tables are in ESSBASE.SERVER: applications, cubes, sessions, users, jobs, logs, and the MDX functions it understands, with their syntax.
 
 ```
 SELECT NAME, SYNTAX
-FROM Essbase.Server.MdxFunctions
+FROM ESSBASE.SERVER.MDX_FUNCTIONS
 WHERE NAME LIKE 'Top%'
 ORDER BY NAME
 ```

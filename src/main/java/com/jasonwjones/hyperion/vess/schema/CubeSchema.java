@@ -43,7 +43,7 @@ import com.jasonwjones.hyperion.vess.outline.Outline;
 public final class CubeSchema extends AbstractSchema implements VessSchema {
 
 	/** The cube's own tables, whose names a dimension's table gives way to */
-	static final Set<String> TABLES = Set.of("CELLS", "FACTS", "DIMENSIONS", "MEMBERS", "GENERATIONS", "LEVELS", "ALIASTABLES", "ALIASES",
+	static final Set<String> TABLES = Set.of("CELLS", "FACTS", "DIMENSIONS", "MEMBERS", "GENERATIONS", "LEVELS", "ALIAS_TABLES", "ALIASES",
 			"VARIABLES", "SCRIPTS", "DRILLTHROUGHS", "LOCKS", "SESSIONS", "SCENARIOS");
 
 	private final ServerContext context;
@@ -130,8 +130,8 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 			}
 			List<VessTable> list = new ArrayList<>();
 			CellSource cells = CellSource.of(context, application, cube);
-			list.add(new CellsTable("Cells", cells, application, cube, false, this::dimensionTable));
-			list.add(new CellsTable("Facts", cells, application, cube, true, this::dimensionTable));
+			list.add(new CellsTable("CELLS", cells, application, cube, false, this::dimensionTable));
+			list.add(new CellsTable("FACTS", cells, application, cube, true, this::dimensionTable));
 			list.addAll(fixedTables());
 			for (Dimension dimension : outline.getDimensions()) {
 				list.add(new DimensionTable(dimensionTable(dimension), () -> context.outline(application, cube), application, cube, dimension,
@@ -177,7 +177,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable dimensions() {
-		return new ListTable("Dimensions", "The cube's dimensions, attribute dimensions included, in outline order",
+		return new ListTable("DIMENSIONS", "The cube's dimensions, attribute dimensions included, in outline order",
 				List.of(Column.text("NAME", MEMBER_NAME).notNull(), Column.integer("NUMBER").notNull(),
 						Column.text("TYPE", 20).remarks("Regular, Accounts, Time, Attribute, Country or Currency Partition"),
 						Column.text("DENSITY", 6).remarks("Dense or Sparse"), Column.integer("MEMBERS").remarks("Members, shared ones included"),
@@ -204,7 +204,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable members() {
-		return new ListTable("Members", "Every member of every dimension, where it sits in the outline, shared members included",
+		return new ListTable("MEMBERS", "Every member of every dimension, where it sits in the outline, shared members included",
 				List.of(Column.integer("OUTLINE_ORDER").notNull().remarks("Sort by it for the outline's order"),
 						Column.text("DIMENSION", MEMBER_NAME).notNull(), Column.text("NAME", MEMBER_NAME).notNull(),
 						Column.text("ALIAS", MEMBER_NAME), Column.text("PARENT", MEMBER_NAME), Column.integer("LEVEL").notNull(),
@@ -235,7 +235,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 
 	private VessTable generations(boolean levels) {
 		String what = levels ? "level" : "generation";
-		return new ListTable(levels ? "Levels" : "Generations", "Each dimension's " + what + "s, with their names and how many members each has",
+		return new ListTable(levels ? "LEVELS" : "GENERATIONS", "Each dimension's " + what + "s, with their names and how many members each has",
 				List.of(Column.text("DIMENSION", MEMBER_NAME).notNull(), Column.integer("NUMBER").notNull(),
 						Column.text("NAME", MEMBER_NAME).remarks("The name given to the " + what + ", if any"), Column.integer("MEMBERS").notNull()),
 				List.of("DIMENSION", "NUMBER"), conditions -> {
@@ -258,7 +258,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable aliasTables() {
-		return new ListTable("AliasTables", "The cube's alias tables",
+		return new ListTable("ALIAS_TABLES", "The cube's alias tables",
 				List.of(Column.text("NAME", MEMBER_NAME).notNull(), Column.bool("IS_DEFAULT").notNull()), List.of("NAME"), conditions -> {
 					Outline outline = outline();
 					List<Object[]> rows = new ArrayList<>();
@@ -270,7 +270,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable aliases() {
-		return new ListTable("Aliases", "Every member's alias in every alias table, a row each",
+		return new ListTable("ALIASES", "Every member's alias in every alias table, a row each",
 				List.of(Column.text("DIMENSION", MEMBER_NAME).notNull(), Column.text("MEMBER", MEMBER_NAME).notNull(),
 						Column.text("ALIAS_TABLE", MEMBER_NAME).notNull(), Column.text("ALIAS", MEMBER_NAME).notNull()),
 				List.of("MEMBER", "ALIAS_TABLE"), conditions -> {
@@ -297,7 +297,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 				Column.bool("IN_EFFECT").notNull().remarks("False when a variable of the same name at a narrower scope hides it"));
 
 		Variables() {
-			super("Variables", "The substitution variables this cube sees, at every scope; insert, update and delete them here");
+			super("VARIABLES", "The substitution variables this cube sees, at every scope; insert, update and delete them here");
 		}
 
 		@Override
@@ -439,7 +439,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 				Column.bigint("SIZE"), Column.timestamp("MODIFIED"));
 
 		Scripts() {
-			super("Scripts", "The cube's calc and MDX scripts; insert, update CONTENT and delete them here, and CALL a calc script to run it");
+			super("SCRIPTS", "The cube's calc and MDX scripts; insert, update CONTENT and delete them here, and CALL a calc script to run it");
 		}
 
 		@Override
@@ -571,7 +571,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable drillthroughs() {
-		return new ListTable("Drillthroughs", "The cube's drill-through definitions",
+		return new ListTable("DRILLTHROUGHS", "The cube's drill-through definitions",
 				List.of(Column.text("NAME", MEMBER_NAME).notNull(), Column.text("TYPE", 20), Column.text("URL", TEXT),
 						Column.text("REGIONS", TEXT).remarks("The drillable regions, one to a line"), Column.text("DATASOURCE", MEMBER_NAME),
 						Column.bool("USE_TEMP_TABLES")),
@@ -597,7 +597,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 				Column.text("USER_NAME", MEMBER_NAME), Column.timestamp("LOCKED"));
 
 		Locks() {
-			super("Locks", "The cube's locked objects; deleting a lock unlocks the object");
+			super("LOCKS", "The cube's locked objects; deleting a lock unlocks the object");
 		}
 
 		@Override
@@ -657,7 +657,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 		private final List<Column> columns = ServerSchema.sessionColumns();
 
 		Sessions() {
-			super("Sessions", "Who's connected to this cube; deleting a session logs it off");
+			super("SESSIONS", "Who's connected to this cube; deleting a session logs it off");
 		}
 
 		@Override
@@ -692,7 +692,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable scenarios() {
-		return new ListTable("Scenarios", "The cube's sandboxed scenarios, when it has scenarios enabled",
+		return new ListTable("SCENARIOS", "The cube's sandboxed scenarios, when it has scenarios enabled",
 				List.of(Column.text("NAME", MEMBER_NAME).notNull()), List.of("NAME"), conditions -> {
 					List<Object[]> rows = new ArrayList<>();
 					EssCube essCube = essCube();

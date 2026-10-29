@@ -47,11 +47,11 @@ import com.jasonwjones.hyperion.vess.VessException;
 /**
  * The server's own schema: its applications and cubes, sessions, users and
  * groups, substitution variables, jobs, logs, connections, and the MDX
- * functions it knows. It lives in a catalog of its own, Essbase.Server.
+ * functions it knows. It lives in a catalog of its own, ESSBASE.SERVER.
  */
 public final class ServerSchema extends AbstractSchema implements VessSchema {
 
-	public static final String NAME = "Server";
+	public static final String NAME = "SERVER";
 
 	private final ServerContext context;
 
@@ -185,7 +185,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 				Column.integer("CONNECTED_USERS"));
 
 		Applications() {
-			super("Applications", "The server's applications; setting STATUS starts or stops one");
+			super("APPLICATIONS", "The server's applications; setting STATUS starts or stops one");
 		}
 
 		@Override
@@ -272,7 +272,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 				Column.timestamp("MODIFIED"), Column.text("MODIFIED_BY", MEMBER_NAME), Column.timestamp("STARTED"));
 
 		Cubes() {
-			super("Cubes", "Every application's cubes; setting STATUS starts or stops one");
+			super("CUBES", "Every application's cubes; setting STATUS starts or stops one");
 		}
 
 		@Override
@@ -344,7 +344,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 				Column.text("VALUE", VARIABLE_VALUE).notNull().writable());
 
 		Variables() {
-			super("Variables", "Substitution variables at every scope; insert, update and delete them here");
+			super("VARIABLES", "Substitution variables at every scope; insert, update and delete them here");
 		}
 
 		@Override
@@ -512,7 +512,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 		private final List<Column> columns = sessionColumns();
 
 		Sessions() {
-			super("Sessions", "Who's connected, and to what; deleting a session logs it off");
+			super("SESSIONS", "Who's connected, and to what; deleting a session logs it off");
 		}
 
 		@Override
@@ -584,7 +584,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable users() {
-		return new ListTable("Users", "The users the server knows",
+		return new ListTable("USERS", "The users the server knows",
 				List.of(Column.text("NAME", MEMBER_NAME).notNull(), Column.text("DISPLAY_NAME", MEMBER_NAME), Column.text("EMAIL", MEMBER_NAME)),
 				List.of("NAME"), conditions -> {
 					List<Object[]> rows = new ArrayList<>();
@@ -596,7 +596,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable groups() {
-		return new ListTable("Groups", "The groups the server knows, and the role each has",
+		return new ListTable("GROUPS", "The groups the server knows, and the role each has",
 				List.of(Column.text("NAME", MEMBER_NAME).notNull(), Column.text("DESCRIPTION", TEXT), Column.text("ROLE", MEMBER_NAME)),
 				List.of("NAME"), conditions -> {
 					List<Object[]> rows = new ArrayList<>();
@@ -608,7 +608,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable groupMembers() {
-		return new ListTable("GroupMembers", "The users and groups in each group",
+		return new ListTable("GROUP_MEMBERS", "The users and groups in each group",
 				List.of(Column.text("GROUP_NAME", MEMBER_NAME).notNull(), Column.text("MEMBER_NAME", MEMBER_NAME).notNull(),
 						Column.text("MEMBER_TYPE", 5).notNull().remarks("User or Group")),
 				List.of("GROUP_NAME", "MEMBER_NAME", "MEMBER_TYPE"), conditions -> {
@@ -630,7 +630,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable permissions() {
-		return new ListTable("Permissions", "Who has which role: on the server, or on an application",
+		return new ListTable("PERMISSIONS", "Who has which role: on the server, or on an application",
 				List.of(Column.text("APPLICATION", OBJECT_NAME).remarks("The application, or null for a role on the whole server"),
 						Column.text("NAME", MEMBER_NAME).notNull(), Column.text("ROLE", MEMBER_NAME), Column.bool("IS_GROUP").notNull()),
 				List.of(), conditions -> {
@@ -651,7 +651,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable jobs() {
-		return new ListTable("Jobs", "The server's job history, newest first: calcs, loads, imports and exports",
+		return new ListTable("JOBS", "The server's job history, newest first: calcs, loads, imports and exports",
 				List.of(Column.bigint("ID").notNull(), Column.text("APPLICATION", OBJECT_NAME), Column.text("CUBE", OBJECT_NAME),
 						Column.text("TYPE", MEMBER_NAME), Column.text("FILE_NAME", TEXT), Column.text("USER_NAME", MEMBER_NAME),
 						Column.timestamp("STARTED"), Column.timestamp("ENDED"), Column.text("STATUS", 30), Column.text("MESSAGE", TEXT)),
@@ -736,7 +736,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable log() {
-		return new ListTable("Log", "Each application's latest log, an entry a row; say which APPLICATION to read only its log",
+		return new ListTable("LOG", "Each application's latest log, an entry a row; say which APPLICATION to read only its log",
 				List.of(Column.text("APPLICATION", OBJECT_NAME).notNull(), Column.timestamp("LOGGED"), Column.text("SEVERITY", 20),
 						Column.integer("SEVERITY_LEVEL"), Column.text("MESSAGE_ID", 20), Column.text("COMPONENT", MEMBER_NAME),
 						Column.text("MESSAGE", TEXT)),
@@ -780,7 +780,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable configuration() {
-		return new ListTable("Configuration", "Each application's configuration settings, set or not",
+		return new ListTable("CONFIGURATION", "Each application's configuration settings, set or not",
 				List.of(Column.text("APPLICATION", OBJECT_NAME).notNull(), Column.text("NAME", MEMBER_NAME).notNull(), Column.text("VALUE", TEXT),
 						Column.bool("CONFIGURED").remarks("Whether the application sets it, rather than taking the default"),
 						Column.text("DESCRIPTION", TEXT), Column.text("SYNTAX", TEXT)),
@@ -797,7 +797,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable connections() {
-		return new ListTable("Connections", "The server's global connections to files and databases",
+		return new ListTable("CONNECTIONS", "The server's global connections to files and databases",
 				List.of(Column.text("NAME", MEMBER_NAME).notNull(), Column.text("TYPE", 30), Column.text("DESCRIPTION", TEXT),
 						Column.text("HOST", MEMBER_NAME), Column.text("PATH", TEXT)),
 				List.of("NAME"), conditions -> {
@@ -812,7 +812,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable datasources() {
-		return new ListTable("Datasources", "The server's global datasources", List.of(Column.text("NAME", MEMBER_NAME).notNull()), List.of("NAME"),
+		return new ListTable("DATASOURCES", "The server's global datasources", List.of(Column.text("NAME", MEMBER_NAME).notNull()), List.of("NAME"),
 				conditions -> {
 					List<Object[]> rows = new ArrayList<>();
 					for (EssDataSource datasource : context.getServer().getDataSources()) {
@@ -823,7 +823,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable datasourceColumns() {
-		return new ListTable("DatasourceColumns", "The columns of each global datasource",
+		return new ListTable("DATASOURCE_COLUMNS", "The columns of each global datasource",
 				List.of(Column.text("DATASOURCE", MEMBER_NAME).notNull(), Column.integer("COLUMN_INDEX"), Column.text("NAME", MEMBER_NAME).notNull(),
 						Column.text("TYPE", 30)),
 				List.of("DATASOURCE", "NAME"), conditions -> {
@@ -842,7 +842,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable mdxFunctions() {
-		return new ListTable("MdxFunctions", "The MDX functions the server knows, with their syntax",
+		return new ListTable("MDX_FUNCTIONS", "The MDX functions the server knows, with their syntax",
 				List.of(Column.text("CATEGORY", MEMBER_NAME), Column.text("NAME", MEMBER_NAME).notNull(), Column.text("SYNTAX", TEXT),
 						Column.text("DESCRIPTION", TEXT)),
 				List.of(), conditions -> {
@@ -857,7 +857,7 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	}
 
 	private VessTable properties() {
-		return new ListTable("Properties", "What the server says about itself: its version, build and settings",
+		return new ListTable("PROPERTIES", "What the server says about itself: its version, build and settings",
 				List.of(Column.text("SOURCE", 10).notNull().remarks("About or Instance"), Column.text("NAME", MEMBER_NAME).notNull(),
 						Column.text("VALUE", TEXT)),
 				List.of("SOURCE", "NAME"), conditions -> {

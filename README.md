@@ -6,8 +6,8 @@ fact table, substitution variables and scripts are tables you can edit, and calc
 procedures. It talks to Essbase over the REST API, so it needs no Oracle software.
 
 ```sql
-SELECT p.Category, p.Caffeinated, SUM(f.Value) AS Sales
-FROM Sample.Basic.Facts f
+SELECT p.Category, p.Caffeinated, SUM(f.VALUE) AS Sales
+FROM Sample.Basic.FACTS f
 JOIN Sample.Basic.Product p ON f.Product = p.NAME
 WHERE f.Measures = 'Sales' AND f.Scenario = 'Actual'
 GROUP BY p.Category, p.Caffeinated
@@ -70,7 +70,7 @@ settings put them; the URL wins:
 | `browse.stopped` | `true` to list the data and dimension tables of stopped applications too; see [Stopped applications](#stopped-applications) |
 | `outline.cache` | Seconds to keep an outline before reading it again; 300 by default |
 | `chunk.cells`, `chunk.members` | The most cells one MDX query asks for (500,000), and the most members of one dimension it names (2,000) |
-| `server.catalog` | The name of the catalog holding the server's own tables; `Essbase` by default |
+| `server.catalog` | The name of the catalog holding the server's own tables; `ESSBASE` by default |
 
 From code:
 
@@ -93,14 +93,14 @@ Connection connection = DriverManager.getConnection(
 
 The tree then has a database for each application, a schema for each cube, and the tables, routines
 and keys described below. Open a table to see its rows, and right-click a cube's schema for
-**Diagrams > Show Diagram** to see it as a star: Cells in the middle, a line to each dimension's
+**Diagrams > Show Diagram** to see it as a star: CELLS in the middle, a line to each dimension's
 table, and from those to their attribute dimensions.
 
 Choosing a cube for a query console makes it the one names refer to, so `SELECT * FROM Product`
 works, and the outline functions need no prefix. Ticking **Read-only** on the data source makes the
 connection read-only, as `readonly=true` does.
 
-Tables you can change, such as Variables and Scripts, can be edited in the table view: change a
+Tables you can change, such as VARIABLES and SCRIPTS, can be edited in the table view: change a
 value and submit, and the variable or script changes on the server.
 
 ### DBeaver and others
@@ -111,44 +111,44 @@ it the same way, through the same metadata.
 
 ## What's there
 
-### The server: `Essbase.Server`
+### The server: `ESSBASE.SERVER`
 
 | Table | Holds |
 | --- | --- |
-| `Applications` | Each application: type, status, owner, when created and changed. Set `STATUS` to `Started` or `Stopped` to start or stop it |
-| `Cubes` | Each cube, likewise |
-| `Variables` | Substitution variables at every scope, with `APPLICATION` and `CUBE` saying where. Insert, update and delete them |
-| `Sessions` | Who's connected to what. Deleting a session logs it off |
-| `Users`, `Groups`, `GroupMembers`, `Permissions` | Security: users, groups, who's in each, and who has which role on the server or an application |
-| `Jobs` | The job history, newest first, a page at a time |
-| `Log` | Each application's latest log, an entry a row: when, how severe, the message. Say which `APPLICATION` to read just its log |
-| `Configuration` | Each application's configuration settings |
-| `Connections`, `Datasources`, `DatasourceColumns` | Global connections and datasources |
-| `MdxFunctions` | The MDX functions the server knows, with their syntax |
-| `Properties` | What the server says about itself: version, build, settings |
+| `APPLICATIONS` | Each application: type, status, owner, when created and changed. Set `STATUS` to `Started` or `Stopped` to start or stop it |
+| `CUBES` | Each cube, likewise |
+| `VARIABLES` | Substitution variables at every scope, with `APPLICATION` and `CUBE` saying where. Insert, update and delete them |
+| `SESSIONS` | Who's connected to what. Deleting a session logs it off |
+| `USERS`, `GROUPS`, `GROUP_MEMBERS`, `PERMISSIONS` | Security: users, groups, who's in each, and who has which role on the server or an application |
+| `JOBS` | The job history, newest first, a page at a time |
+| `LOG` | Each application's latest log, an entry a row: when, how severe, the message. Say which `APPLICATION` to read just its log |
+| `CONFIGURATION` | Each application's configuration settings |
+| `CONNECTIONS`, `DATASOURCES`, `DATASOURCE_COLUMNS` | Global connections and datasources |
+| `MDX_FUNCTIONS` | The MDX functions the server knows, with their syntax |
+| `PROPERTIES` | What the server says about itself: version, build, settings |
 
-`Server.Sessions` works as well as `Essbase.Server.Sessions`, unless there's an application named
+`SERVER.SESSIONS` works as well as `ESSBASE.SERVER.SESSIONS`, unless there's an application named
 Server.
 
 ### A cube: `Application.Cube`
 
 | Table | Holds |
 | --- | --- |
-| `Cells` | Every value in the cube, at every level, totals and dynamic calculations included: a column for each dimension and `Value` |
-| `Facts` | The values loaded at level 0 of each dimension: the cube as a fact table |
+| `CELLS` | Every value in the cube, at every level, totals and dynamic calculations included: a column for each dimension and `VALUE` |
+| `FACTS` | The values loaded at level 0 of each dimension: the cube as a fact table |
 | one for each dimension | Its members, a row each: name, alias, parent, level, generation, storage, consolidation, formula and UDAs; a column for each generation, holding the member's ancestor there; a column for each other alias table; and a column for each attribute, typed as a boolean, number, date or text |
-| `Dimensions` | Each dimension: type, dense or sparse, members, generations, levels |
-| `Members` | Every member of every dimension where it sits in the outline, shared members included |
-| `Generations`, `Levels` | Each dimension's generations and levels, with their names |
-| `AliasTables`, `Aliases` | The alias tables, and every alias in every one |
-| `Variables` | The substitution variables the cube sees, at every scope, with `IN_EFFECT` false where a narrower one hides a variable. Insert, update and delete them |
-| `Scripts` | Calc and MDX scripts. Insert them, change `CONTENT` to save one, delete them |
-| `Drillthroughs` | Drill-through definitions |
-| `Locks` | Locked objects. Deleting one unlocks it |
-| `Sessions` | Who's connected to the cube |
-| `Scenarios` | Sandboxed scenarios, where the cube has them |
+| `DIMENSIONS` | Each dimension: type, dense or sparse, members, generations, levels |
+| `MEMBERS` | Every member of every dimension where it sits in the outline, shared members included |
+| `GENERATIONS`, `LEVELS` | Each dimension's generations and levels, with their names |
+| `ALIAS_TABLES`, `ALIASES` | The alias tables, and every alias in every one |
+| `VARIABLES` | The substitution variables the cube sees, at every scope, with `IN_EFFECT` false where a narrower one hides a variable. Insert, update and delete them |
+| `SCRIPTS` | Calc and MDX scripts. Insert them, change `CONTENT` to save one, delete them |
+| `DRILLTHROUGHS` | Drill-through definitions |
+| `LOCKS` | Locked objects. Deleting one unlocks it |
+| `SESSIONS` | Who's connected to the cube |
+| `SCENARIOS` | Sandboxed scenarios, where the cube has them |
 
-Each table has its primary key, and Cells, Facts and the dimension tables have foreign keys to the
+Each table has its primary key, and CELLS, FACTS and the dimension tables have foreign keys to the
 tables of the dimensions they name, so tools can draw them and follow them.
 
 ### Procedures
@@ -159,8 +159,8 @@ tables of the dimensions they name, so tools can draw them and follow them.
 | each MDX script | `CALL Sample.Basic.MyReport()` runs it and answers with its result |
 | `RUN_CALC(script)` | Runs calc script text: `CALL Sample.Basic.RUN_CALC('CALC ALL;')` |
 | `DEFAULT_CALC()` | Runs the cube's default calculation |
-| `Server.START_APPLICATION(name)`, `Server.STOP_APPLICATION(name)` | Starts or stops an application |
-| `Server.REFRESH()` | Forgets the outlines and applications Vess has read, so it reads them again |
+| `SERVER.START_APPLICATION(name)`, `SERVER.STOP_APPLICATION(name)` | Starts or stops an application |
+| `SERVER.REFRESH()` | Forgets the outlines and applications Vess has read, so it reads them again |
 
 `EXEC`, and the JDBC escape `{call ...}`, work too.
 
@@ -182,7 +182,7 @@ Name them with the cube, `Sample.Basic.IS_DESCENDANT(...)`, or choose the cube t
 
 ## Querying data
 
-Cells and Facts are tables like any other, so a query can filter them, join them to the dimension
+CELLS and FACTS are tables like any other, so a query can filter them, join them to the dimension
 tables, group them, rank them and pivot them. Underneath, Vess reads them with MDX, and it reads only
 what the query wants:
 
@@ -194,7 +194,7 @@ what the query wants:
 - A dimension narrowed to one member goes in the MDX query's slicer; the largest dense one goes on
   the columns; the rest are crossed on the rows with `NON EMPTY`, so empty combinations are left out.
 - A big read is split into queries of a sensible size, made one at a time as the rows are used, so
-  a tool showing the first 500 rows of Cells reads only those.
+  a tool showing the first 500 rows of CELLS reads only those.
 
 All of Sample.Basic, every value at every level, is just over half a million values, which Vess
 reads in about three and a half seconds; the values for one market take a fifth of a second.
@@ -206,8 +206,8 @@ Some things to know:
   `MEMBER_ALIAS(Product) = 'Cola'`, or join the dimension's table, to work with aliases.
 - **Names are compared exactly**, as SQL compares text, so `Market = 'new york'` matches nothing.
   Table and column names, on the other hand, aren't case sensitive.
-- **Cells has every level**, so summing it counts each value again in every total above it. Sum
-  Facts, whose values are those loaded, or pick the level you want: `Product = 'Product'` for the
+- **CELLS has every level**, so summing it counts each value again in every total above it. Sum
+  FACTS, whose values are those loaded, or pick the level you want: `Product = 'Product'` for the
   total, `IS_CHILD(Market, 'Market')` for the regions.
 - **Shared members appear once**, where they're stored; `IS_DESCENDANT` counts them where they're
   shared, so Diet's members are under Diet.
@@ -217,17 +217,17 @@ Some things to know:
 
 | Statement | Does |
 | --- | --- |
-| `INSERT INTO Variables (NAME, VALUE) VALUES ('CurMonth', 'Feb')` | Creates a variable for the cube; give `SCOPE` as `Application` or `Server` for those |
-| `UPDATE Server.Variables SET VALUE = 'Feb' WHERE NAME = 'CurMonth'` | Changes a variable, wherever it is |
-| `UPDATE Scripts SET CONTENT = '...' WHERE NAME = 'CalcAll'` | Saves a calc script |
-| `DELETE FROM Server.Sessions WHERE USER_NAME = 'jdoe'` | Logs someone off |
-| `UPDATE Server.Applications SET STATUS = 'Stopped' WHERE NAME = 'Demo'` | Stops an application |
-| `INSERT INTO Cells VALUES ('Jan', 'Sales', '100-10', 'New York', 'Budget', 700)` | Writes a value |
-| `UPDATE Facts SET Value = Value * 1.05 WHERE Scenario = 'Budget'` | Raises the budget by five percent |
-| `INSERT INTO Cells SELECT Year, Measures, Product, Market, 'Budget', Value FROM Facts WHERE Scenario = 'Actual'` | Copies actuals to budget |
-| `DELETE FROM Facts WHERE Scenario = 'Budget' AND Year = 'Dec'` | Clears December's budget |
+| `INSERT INTO VARIABLES (NAME, VALUE) VALUES ('CurMonth', 'Feb')` | Creates a variable for the cube; give `SCOPE` as `Application` or `Server` for those |
+| `UPDATE SERVER.VARIABLES SET VALUE = 'Feb' WHERE NAME = 'CurMonth'` | Changes a variable, wherever it is |
+| `UPDATE SCRIPTS SET CONTENT = '...' WHERE NAME = 'CalcAll'` | Saves a calc script |
+| `DELETE FROM SERVER.SESSIONS WHERE USER_NAME = 'jdoe'` | Logs someone off |
+| `UPDATE SERVER.APPLICATIONS SET STATUS = 'Stopped' WHERE NAME = 'Demo'` | Stops an application |
+| `INSERT INTO CELLS VALUES ('Jan', 'Sales', '100-10', 'New York', 'Budget', 700)` | Writes a value |
+| `UPDATE FACTS SET VALUE = VALUE * 1.05 WHERE Scenario = 'Budget'` | Raises the budget by five percent |
+| `INSERT INTO CELLS SELECT Year, Measures, Product, Market, 'Budget', VALUE FROM FACTS WHERE Scenario = 'Actual'` | Copies actuals to budget |
+| `DELETE FROM FACTS WHERE Scenario = 'Budget' AND Year = 'Dec'` | Clears December's budget |
 
-Writes to Cells and Facts go through Essbase's streaming data load, with no load rule: inserting a
+Writes to CELLS and FACTS go through Essbase's streaming data load, with no load rule: inserting a
 row writes its value, overwriting what was there; updating one writes the new value; deleting one
 makes it #Missing. A member that's calculated rather than stored, such as a Dynamic Calc quarter,
 can't be written to, and Vess says so rather than letting Essbase drop the value. Upper-level stored
@@ -258,8 +258,8 @@ its hints work in the queries; see its README.
 
 Reading a cube's outline starts its application, so browsing a server would start every stopped
 application on it. Vess doesn't: for a cube whose application is stopped, a tool sees the tables
-that don't depend on the outline, such as Variables and Scripts, but not Cells, Facts or the
-dimension tables until the application is started, by `CALL Server.START_APPLICATION('Sample')`,
+that don't depend on the outline, such as VARIABLES and SCRIPTS, but not CELLS, FACTS or the
+dimension tables until the application is started, by `CALL SERVER.START_APPLICATION('Sample')`,
 by any query of its cubes, or elsewhere. Set `browse.stopped=true` to show everything anyway,
 starting applications as they're browsed.
 

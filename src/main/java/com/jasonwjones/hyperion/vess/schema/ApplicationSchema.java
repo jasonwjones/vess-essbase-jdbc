@@ -15,7 +15,7 @@ import com.jasonwjones.hyperion.vess.VessException;
 
 /**
  * An application, which holds a schema for each of its cubes. It's a catalog
- * to tools, so that Sample.Basic.Cells reads as the cube it is.
+ * to tools, so that Sample.Basic.CELLS reads as the cube it is.
  */
 public final class ApplicationSchema extends AbstractSchema {
 

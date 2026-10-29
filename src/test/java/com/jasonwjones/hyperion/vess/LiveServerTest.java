@@ -99,9 +99,9 @@ public class LiveServerTest {
 				catalogs.add(results.getString("TABLE_CAT"));
 			}
 		}
-		assertTrue(catalogs.contains("Essbase") && catalogs.contains("Sample"), catalogs.toString());
+		assertTrue(catalogs.contains("ESSBASE") && catalogs.contains("Sample"), catalogs.toString());
 		List<String> keys = new ArrayList<>();
-		try (ResultSet results = metaData.getImportedKeys("Sample", "Basic", "Cells")) {
+		try (ResultSet results = metaData.getImportedKeys("Sample", "Basic", "CELLS")) {
 			while (results.next()) {
 				keys.add(results.getString("FKCOLUMN_NAME") + "->" + results.getString("PKTABLE_NAME"));
 			}
@@ -112,9 +112,9 @@ public class LiveServerTest {
 
 	@Test
 	public void readsTheServersOwnTables() throws SQLException {
-		assertTrue(query("select NAME from Essbase.Server.Applications").contains(List.of("Sample")));
-		assertTrue(query("select NAME from Server.Cubes where APPLICATION = 'Sample'").contains(List.of("Basic")));
-		assertTrue(query("select count(*) from Server.MdxFunctions").get(0).get(0) instanceof Long);
+		assertTrue(query("select NAME from ESSBASE.SERVER.APPLICATIONS").contains(List.of("Sample")));
+		assertTrue(query("select NAME from SERVER.CUBES where APPLICATION = 'Sample'").contains(List.of("Basic")));
+		assertTrue(query("select count(*) from server.mdx_functions").get(0).get(0) instanceof Long);
 	}
 
 	@Test

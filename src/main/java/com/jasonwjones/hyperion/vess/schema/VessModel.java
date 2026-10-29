@@ -41,7 +41,7 @@ public final class VessModel {
 			}
 
 		});
-		// Server.Sessions as well as Essbase.Server.Sessions; an application
+		// SERVER.SESSIONS as well as ESSBASE.SERVER.SESSIONS; an application
 		// named Server, added after, takes the name
 		root.add(ServerSchema.NAME, server);
 		refresh();
@@ -127,7 +127,7 @@ public final class VessModel {
 			catalog = names.get(names.size() - 3);
 			schema = names.get(names.size() - 2);
 		} else if (names.size() == 2) {
-			// Server.Table, Cube.Table within the default catalog, or
+			// SERVER.Table, Cube.Table within the default catalog, or
 			// "App.Cube".Table, as the engine resolves them
 			catalog = defaultCatalog;
 			schema = names.get(0);

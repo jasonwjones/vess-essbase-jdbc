@@ -48,8 +48,8 @@ final class TestEngine implements AutoCloseable, Dml.Target {
 		String key = "test" + (++counter) + "/Sample/Basic";
 		OutlineFunctions.register(key, cube::outline);
 		List<OutlineFunction> functions = OutlineFunction.forCube(key);
-		tables.put("Cells", new CellsTable("Cells", cube, "Sample", "Basic", false, Dimension::getName));
-		tables.put("Facts", new CellsTable("Facts", cube, "Sample", "Basic", true, Dimension::getName));
+		tables.put("CELLS", new CellsTable("CELLS", cube, "Sample", "Basic", false, Dimension::getName));
+		tables.put("FACTS", new CellsTable("FACTS", cube, "Sample", "Basic", true, Dimension::getName));
 		for (Dimension dimension : cube.outline().getDimensions()) {
 			tables.put(dimension.getName(), new DimensionTable(dimension.getName(), cube::outline, "Sample", "Basic", dimension, Dimension::getName));
 		}
