@@ -109,24 +109,25 @@ public final class ServerSchema extends AbstractSchema implements VessSchema {
 	@Override
 	public synchronized List<Procedure> getProcedures() {
 		if (procedures == null) {
-			List<Column> status = List.of(Column.text("RESULT", TEXT));
-			procedures = List.of(new Procedure("START_APPLICATION", "Starts an application", List.of(Column.text("APPLICATION", OBJECT_NAME)),
-					status, true, arguments -> {
-						EssApplication application = context.application(argument(arguments, 0, "the application"));
-						context.checkWritable("start " + application.getName());
-						application.start();
+			String prefix = "CALL " + getCatalogName() + "." + NAME + ".";
+			List<Column> application = List.of(Column.text("APPLICATION", OBJECT_NAME));
+			procedures = List.of(new Procedure("START_APPLICATION", "Starts an application: " + prefix + "START_APPLICATION('Sample')",
+					application, true, arguments -> {
+						EssApplication started = context.application(argument(arguments, 0, "the application"));
+						context.checkWritable("start " + started.getName());
+						started.start();
 						context.forgetStatuses();
-						return result("Started " + application.getName());
-					}), new Procedure("STOP_APPLICATION", "Stops an application", List.of(Column.text("APPLICATION", OBJECT_NAME)), status,
-							true, arguments -> {
-								EssApplication application = context.application(argument(arguments, 0, "the application"));
-								context.checkWritable("stop " + application.getName());
-								application.stop();
+						return result("Started " + started.getName());
+					}), new Procedure("STOP_APPLICATION", "Stops an application: " + prefix + "STOP_APPLICATION('Sample')", application, true,
+							arguments -> {
+								EssApplication stopped = context.application(argument(arguments, 0, "the application"));
+								context.checkWritable("stop " + stopped.getName());
+								stopped.stop();
 								context.forgetStatuses();
-								return result("Stopped " + application.getName());
+								return result("Stopped " + stopped.getName());
 							}),
-					new Procedure("REFRESH", "Forgets the outlines and applications Vess has read, so it reads them again", List.of(), status,
-							false, arguments -> {
+					new Procedure("REFRESH", "Forgets the outlines and applications Vess has read, so it reads them again: " + prefix + "REFRESH()",
+							List.of(), false, arguments -> {
 								context.forgetOutlines();
 								refresh.run();
 								return result("Vess will read the server afresh");

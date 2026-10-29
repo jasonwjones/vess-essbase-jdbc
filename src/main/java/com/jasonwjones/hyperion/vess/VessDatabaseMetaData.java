@@ -395,8 +395,10 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 		for (Object[] each : procedures(catalog, schemaPattern, procedureNamePattern)) {
 			VessSchema schema = (VessSchema) each[0];
 			Procedure procedure = (Procedure) each[1];
+			// A procedure answers with a result set, not a return value; saying
+			// it returns one makes tools take it for a function
 			rows.add(new Object[] { schema.getCatalogName(), schema.getSchemaName(), procedure.getName(), null, null, null,
-					procedure.getRemarks(), (int) procedureReturnsResult, procedure.getName() });
+					procedure.getRemarks(), (int) procedureNoResult, procedure.getName() });
 		}
 		return result(rows, "PROCEDURE_CAT", "PROCEDURE_SCHEM", "PROCEDURE_NAME", "RESERVED1", "RESERVED2", "RESERVED3", "REMARKS",
 				"PROCEDURE_TYPE:S", "SPECIFIC_NAME");
@@ -409,17 +411,11 @@ public class VessDatabaseMetaData implements DatabaseMetaData {
 		for (Object[] each : procedures(catalog, schemaPattern, procedureNamePattern)) {
 			VessSchema schema = (VessSchema) each[0];
 			Procedure procedure = (Procedure) each[1];
+			// Only the parameters: tools read a result column as a return value
 			int position = 1;
 			for (Column column : procedure.getParameters()) {
 				if (matches(columnNamePattern, column.getName())) {
 					rows.add(procedureColumn(schema, procedure, column, procedureColumnIn, position));
-				}
-				position++;
-			}
-			position = 1;
-			for (Column column : procedure.getResults()) {
-				if (matches(columnNamePattern, column.getName())) {
-					rows.add(procedureColumn(schema, procedure, column, procedureColumnResult, position));
 				}
 				position++;
 			}

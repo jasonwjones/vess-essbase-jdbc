@@ -728,10 +728,9 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 
 	@Override
 	public List<Procedure> getProcedures() {
-		List<Column> status = List.of(Column.text("RESULT", TEXT));
 		List<Procedure> procedures = new ArrayList<>();
-		procedures.add(new Procedure("RUN_CALC", "Runs calc script text against the cube: CALL RUN_CALC('CALC ALL;')",
-				List.of(Column.text("SCRIPT", TEXT)), status, true, arguments -> {
+		procedures.add(new Procedure("RUN_CALC", "Runs calc script text against the cube: CALL " + call("RUN_CALC") + "('CALC ALL;')",
+				List.of(Column.text("SCRIPT", TEXT)), true, arguments -> {
 					String script = ServerSchema.argument(arguments, 0, "the calc script to run");
 					context.checkWritable("run a calc script on " + application + "." + cube);
 					long started = System.currentTimeMillis();
@@ -742,20 +741,22 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 					}
 					return ServerSchema.result("Calculated " + application + "." + cube + " in " + seconds(started));
 				}));
-		procedures.add(new Procedure("DEFAULT_CALC", "Runs the cube's default calculation", List.of(), status, true, arguments -> {
-			context.checkWritable("calculate " + application + "." + cube);
-			long started = System.currentTimeMillis();
-			try {
-				essCube().calculate();
-			} catch (EssApiException e) {
-				throw new VessException(e.getMessage(), e);
-			}
-			return ServerSchema.result("Calculated " + application + "." + cube + " in " + seconds(started));
-		}));
+		procedures.add(new Procedure("DEFAULT_CALC", "Runs the cube's default calculation: CALL " + call("DEFAULT_CALC") + "()", List.of(),
+				true, arguments -> {
+					context.checkWritable("calculate " + application + "." + cube);
+					long started = System.currentTimeMillis();
+					try {
+						essCube().calculate();
+					} catch (EssApiException e) {
+						throw new VessException(e.getMessage(), e);
+					}
+					return ServerSchema.result("Calculated " + application + "." + cube + " in " + seconds(started));
+				}));
 		try {
 			for (EssScript script : essCube().getScripts(EssScript.ScriptType.CALC)) {
 				String name = script.getName();
-				procedures.add(new Procedure(name, "Runs the calc script " + name, List.of(), status, true, arguments -> {
+				String remarks = "Runs the calc script " + name + ": CALL " + call(name) + "()" + preview(script);
+				procedures.add(new Procedure(name, remarks, List.of(), true, arguments -> {
 					context.checkWritable("run the calc script " + name);
 					long started = System.currentTimeMillis();
 					try {
@@ -768,13 +769,43 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 			}
 			for (EssScript script : essCube().getScripts(EssScript.ScriptType.MDX)) {
 				String name = script.getName();
-				procedures.add(new Procedure(name, "Runs the MDX script " + name + " and answers with its result", List.of(), List.of(), false,
+				procedures.add(new Procedure(name, "Runs the MDX script " + name + " and answers with its result: CALL " + call(name) + "()"
+						+ preview(script), List.of(), false,
 						arguments -> Procedure.Result.of(context.mdx(findScript(EssScript.ScriptType.MDX, name).getContent()))));
 			}
 		} catch (SQLException | EssApiException e) {
 			// The scripts can't be listed, so there are only the built-in procedures
 		}
 		return procedures;
+	}
+
+	/**
+	 * How to name one of the cube's procedures in a CALL, quoting what needs
+	 * it.
+	 */
+	private String call(String procedure) {
+		return quoted(application) + "." + quoted(cube) + "." + quoted(procedure);
+	}
+
+	static String quoted(String name) {
+		return name.matches("[A-Za-z_][A-Za-z0-9_]*") ? name : '"' + name.replace("\"", "\"\"") + '"';
+	}
+
+	/**
+	 * The start of a script, on one line, for someone deciding whether to run
+	 * it; or nothing if it can't be read.
+	 */
+	private static String preview(EssScript script) {
+		try {
+			String content = script.getContent();
+			if (content == null || content.isBlank()) {
+				return "";
+			}
+			String line = content.replaceAll("\\s+", " ").strip();
+			return ". It reads: " + (line.length() > 200 ? line.substring(0, 200) + "…" : line);
+		} catch (EssApiException e) {
+			return "";
+		}
 	}
 
 	private EssScript findScript(EssScript.ScriptType type, String name) throws SQLException {

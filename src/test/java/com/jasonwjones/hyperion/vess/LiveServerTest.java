@@ -107,6 +107,19 @@ public class LiveServerTest {
 			}
 		}
 		assertTrue(keys.contains("PRODUCT->DIM_PRODUCT"), keys.toString());
+		try (ResultSet results = metaData.getProcedures("Sample", "Basic", "CalcAll")) {
+			assertTrue(results.next(), "CalcAll is a procedure");
+			assertEquals(DatabaseMetaData.procedureNoResult, results.getShort("PROCEDURE_TYPE"), "a procedure, not a function");
+			assertTrue(results.getString("REMARKS").contains("CALL Sample.Basic.CalcAll()"), results.getString("REMARKS"));
+		}
+		try (ResultSet results = metaData.getProcedureColumns("Sample", "Basic", "CalcAll", "%")) {
+			assertTrue(!results.next(), "CalcAll takes nothing and returns nothing");
+		}
+		try (ResultSet results = metaData.getProcedureColumns("Sample", "Basic", "RUN_CALC", "%")) {
+			assertTrue(results.next());
+			assertEquals(DatabaseMetaData.procedureColumnIn, results.getShort("COLUMN_TYPE"));
+			assertTrue(!results.next());
+		}
 		assertTrue(connection.isValid(5));
 	}
 

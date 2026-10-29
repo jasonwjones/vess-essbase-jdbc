@@ -22,7 +22,7 @@ import org.apache.calcite.schema.ScalarFunction;
 
 /**
  * A SQL function that answers from a cube's outline, such as
- * IS_DESCENDANT(Product, 'Colas'). Each cube's schema has its own, bound to
+ * IS_DESCENDANT(PRODUCT, '100'). Each cube's schema has its own, bound to
  * that cube.
  */
 public final class OutlineFunction implements ScalarFunction, ImplementableFunction {
@@ -64,9 +64,9 @@ public final class OutlineFunction implements ScalarFunction, ImplementableFunct
 		Column member = Column.text("MEMBER", MEMBER_NAME);
 		List<OutlineFunction> functions = new ArrayList<>();
 		functions.add(new OutlineFunction("IS_DESCENDANT",
-				"Whether a member is below another, at any depth, counting where it's shared: IS_DESCENDANT(Product, 'Colas')",
+				"Whether a member is below another, at any depth, counting where it's shared: IS_DESCENDANT(PRODUCT, '100')",
 				List.of(member, Column.text("ANCESTOR", MEMBER_NAME)), Column.bool("RESULT"), "isDescendant", cubeKey));
-		functions.add(new OutlineFunction("IS_CHILD", "Whether a member is directly below another: IS_CHILD(Market, 'East')",
+		functions.add(new OutlineFunction("IS_CHILD", "Whether a member is directly below another: IS_CHILD(MARKET, 'East')",
 				List.of(member, Column.text("PARENT", MEMBER_NAME)), Column.bool("RESULT"), "isChild", cubeKey));
 		functions.add(new OutlineFunction("MEMBER_LEVEL", "A member's level: 0 for one without children", List.of(member),
 				Column.integer("RESULT"), "memberLevel", cubeKey));
@@ -76,12 +76,12 @@ public final class OutlineFunction implements ScalarFunction, ImplementableFunct
 				"memberParent", cubeKey));
 		functions.add(new OutlineFunction("MEMBER_ALIAS", "A member's alias, in the alias table the connection uses", List.of(member),
 				Column.text("RESULT", MEMBER_NAME), "memberAlias", cubeKey));
-		functions.add(new OutlineFunction("MEMBER_ALIAS", "A member's alias in the given alias table: MEMBER_ALIAS(Product, 'Long Names')",
+		functions.add(new OutlineFunction("MEMBER_ALIAS", "A member's alias in the given alias table: MEMBER_ALIAS(PRODUCT, 'Long Names')",
 				List.of(member, Column.text("ALIAS_TABLE", MEMBER_NAME)), Column.text("RESULT", MEMBER_NAME), "memberAliasIn", cubeKey));
-		functions.add(new OutlineFunction("HAS_UDA", "Whether a member has a user-defined attribute: HAS_UDA(Market, 'Major Market')",
+		functions.add(new OutlineFunction("HAS_UDA", "Whether a member has a user-defined attribute: HAS_UDA(MARKET, 'Major Market')",
 				List.of(member, Column.text("UDA", MEMBER_NAME)), Column.bool("RESULT"), "hasUda", cubeKey));
 		functions.add(new OutlineFunction("MEMBER_ATTRIBUTE",
-				"A member's attribute in an attribute dimension: MEMBER_ATTRIBUTE(Product, 'Caffeinated')",
+				"A member's attribute in an attribute dimension: MEMBER_ATTRIBUTE(PRODUCT, 'Caffeinated')",
 				List.of(member, Column.text("ATTRIBUTE_DIMENSION", MEMBER_NAME)), Column.text("RESULT", MEMBER_NAME), "memberAttribute",
 				cubeKey));
 		functions.add(new OutlineFunction("MEMBER_DIMENSION", "The dimension a member belongs to", List.of(member),

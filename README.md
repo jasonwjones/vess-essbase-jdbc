@@ -165,7 +165,12 @@ tables of the dimensions they name, so tools can draw them and follow them.
 | `SERVER.START_APPLICATION(name)`, `SERVER.STOP_APPLICATION(name)` | Starts or stops an application |
 | `SERVER.REFRESH()` | Forgets the outlines and applications Vess has read, so it reads them again |
 
-`EXEC`, and the JDBC escape `{call ...}`, work too.
+`EXEC`, and the JDBC escape `{call ...}`, work too. Each answers with a row saying what it did, or
+for an MDX script, with its result.
+
+Tools list these as routines, with the outline functions. Each one's description says how to call
+it, and a script's shows how it starts. What a tool shows as a routine's source is made up from
+that, not the script itself, whose full text is in `SCRIPTS`.
 
 ### Functions
 

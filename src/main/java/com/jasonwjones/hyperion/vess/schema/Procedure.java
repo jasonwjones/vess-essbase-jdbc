@@ -46,17 +46,14 @@ public final class Procedure {
 
 	private final List<Column> parameters;
 
-	private final List<Column> results;
-
 	private final boolean changesServer;
 
 	private final Body body;
 
-	public Procedure(String name, String remarks, List<Column> parameters, List<Column> results, boolean changesServer, Body body) {
+	public Procedure(String name, String remarks, List<Column> parameters, boolean changesServer, Body body) {
 		this.name = name;
 		this.remarks = remarks;
 		this.parameters = parameters;
-		this.results = results;
 		this.changesServer = changesServer;
 		this.body = body;
 	}
@@ -71,13 +68,6 @@ public final class Procedure {
 
 	public List<Column> getParameters() {
 		return parameters;
-	}
-
-	/**
-	 * @return the columns of what it answers with, where they're known ahead
-	 */
-	public List<Column> getResults() {
-		return results;
 	}
 
 	/**
