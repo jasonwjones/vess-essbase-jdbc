@@ -72,6 +72,7 @@ settings put them; the URL wins:
 | `chunk.cells`, `chunk.members` | The most cells one MDX query asks for (500,000), and the most members of one dimension it names (2,000) |
 | `server.catalog` | The name of the catalog holding the server's own tables; `ESSBASE` by default |
 | `dimension.prefix` | What each dimension's table is named with first; `DIM_` by default, and it can be empty |
+| `alias.table` | The alias table that `ALIAS` columns and `MEMBER_ALIAS(member)` show, such as `Long Names`; each cube's default unless given, and a cube without it uses its default. MDX run with `members=alias` uses it too |
 | `dimension.names` | How names that come from Essbase are written as names of tables and columns: `upper` (the default) or `lower` make them identifiers, so Pkg Type is `PKG_TYPE`; `as-is` keeps Essbase's spelling |
 
 From code:
@@ -138,7 +139,7 @@ Server.
 | --- | --- |
 | `CELLS` | Every value in the cube, at every level, totals and dynamic calculations included: a column for each dimension and `VALUE` |
 | `FACTS` | The values loaded at level 0 of each dimension: the cube as a fact table |
-| `DIM_` and each dimension | Its members, a row each, in `DIM_PRODUCT` for Product: name, alias, parent, level, generation, storage, consolidation, formula and UDAs; a column for each generation, holding the member's ancestor there; a column for each other alias table; and a column for each attribute, typed as a boolean, number, date or text |
+| `DIM_` and each dimension | Its members, a row each, in `DIM_PRODUCT` for Product: name, alias, parent, level, generation, storage, consolidation, formula and UDAs; a column for each generation, holding the member's ancestor there; and a column for each attribute, typed as a boolean, number, date or text. The alias is from one alias table; `ALIASES` has the others |
 | `DIMENSIONS` | Each dimension: type, dense or sparse, members, generations, levels |
 | `MEMBERS` | Every member of every dimension where it sits in the outline, shared members included |
 | `GENERATIONS`, `LEVELS` | Each dimension's generations and levels, with their names |
@@ -176,7 +177,7 @@ Each cube's schema has functions that answer from its outline:
 | `IS_CHILD(member, parent)` | Whether it's directly below |
 | `MEMBER_LEVEL(member)`, `MEMBER_GENERATION(member)` | Its level and generation |
 | `MEMBER_PARENT(member)`, `MEMBER_DIMENSION(member)` | Its parent and dimension |
-| `MEMBER_ALIAS(member)`, `MEMBER_ALIAS(member, table)` | Its alias, in the default or another alias table |
+| `MEMBER_ALIAS(member)`, `MEMBER_ALIAS(member, table)` | Its alias, in the alias table the connection uses or the one named |
 | `HAS_UDA(member, uda)` | Whether it has a user-defined attribute |
 | `MEMBER_ATTRIBUTE(member, attribute dimension)` | Its attribute in an attribute dimension |
 

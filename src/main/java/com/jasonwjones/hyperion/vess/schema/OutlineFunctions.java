@@ -20,13 +20,21 @@ import com.jasonwjones.hyperion.vess.outline.Outline;
  */
 public final class OutlineFunctions {
 
-	private static final Map<String, OutlineSource> CUBES = new ConcurrentHashMap<>();
+	/** Where a cube's outline is, and the alias table its ALIAS means */
+	private record Cube(OutlineSource source, String aliasTable) {
+	}
+
+	private static final Map<String, Cube> CUBES = new ConcurrentHashMap<>();
 
 	private OutlineFunctions() {
 	}
 
-	public static void register(String key, OutlineSource source) {
-		CUBES.put(key, source);
+	/**
+	 * @param aliasTable the alias table MEMBER_ALIAS(member) looks in, or null
+	 *            for the cube's default
+	 */
+	public static void register(String key, OutlineSource source, String aliasTable) {
+		CUBES.put(key, new Cube(source, aliasTable));
 	}
 
 	/**
@@ -38,12 +46,12 @@ public final class OutlineFunctions {
 	}
 
 	static Outline outline(String key) {
-		OutlineSource source = CUBES.get(key);
-		if (source == null) {
+		Cube cube = CUBES.get(key);
+		if (cube == null) {
 			throw new IllegalStateException("The outline functions were used after their connection closed");
 		}
 		try {
-			return source.outline();
+			return cube.source().outline();
 		} catch (VessException e) {
 			throw new VessException.Unchecked(e);
 		}
@@ -102,7 +110,7 @@ public final class OutlineFunctions {
 	public static String memberAlias(String key, String member) {
 		Outline outline = outline(key);
 		Member found = outline.getMember(member);
-		return found == null ? null : found.getAlias(outline.getDefaultAliasTable());
+		return found == null ? null : found.getAlias(outline.aliasTable(CUBES.get(key).aliasTable()));
 	}
 
 	public static String memberAliasIn(String key, String member, String table) {

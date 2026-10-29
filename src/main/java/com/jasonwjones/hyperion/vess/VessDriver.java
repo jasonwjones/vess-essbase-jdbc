@@ -89,6 +89,8 @@ public class VessDriver implements Driver {
 				setting(info, VessConnection.DIMENSION_NAMES,
 						"How names from Essbase are written as tables and columns: upper and lower make identifiers, as-is keeps Essbase's",
 						"upper", "lower", "as-is"),
+				setting(info, VessConnection.ALIAS_TABLE,
+						"The alias table ALIAS columns show, such as Long Names; each cube's default unless given, and MDX uses it too"),
 				setting(info, VessConnection.BROWSE_STOPPED,
 						"true to list the data and dimension tables of stopped applications too, which starts them", "false", "true") };
 	}

@@ -21,12 +21,13 @@ import com.jasonwjones.hyperion.vess.outline.Outline;
 
 /**
  * A dimension as a table: a row for each member, as a star schema would have
- * it. Besides each member's name, aliases, parent, level and generation, it has
+ * it. Besides each member's name, alias, parent, level and generation, it has
  * a column for each generation, holding the member's ancestor there, so that
  * values can be grouped by Category or by Region; and a column for each
  * attribute dimension that describes it, holding the member's attribute with
- * its proper type. Shared members are in the Members table rather than here,
- * so each name is one row.
+ * its proper type. The alias is from one alias table, the connection's choice;
+ * ALIASES has the rest. Shared members are in MEMBERS rather than here, so
+ * each name is one row.
  */
 public final class DimensionTable extends VessTable {
 
@@ -45,6 +46,8 @@ public final class DimensionTable extends VessTable {
 
 	private final Naming naming;
 
+	private final String aliasTable;
+
 	private List<Column> columns;
 
 	/** What each column holds, in order */
@@ -53,7 +56,7 @@ public final class DimensionTable extends VessTable {
 	private List<ForeignKey> foreignKeys;
 
 	public DimensionTable(String name, OutlineSource source, String application, String cube, Dimension dimension,
-			Function<Dimension, String> dimensionTables, Naming naming) {
+			Function<Dimension, String> dimensionTables, Naming naming, String aliasTable) {
 		super(name, remarks(dimension));
 		this.source = source;
 		this.application = application;
@@ -61,6 +64,7 @@ public final class DimensionTable extends VessTable {
 		this.dimensionName = dimension.getName();
 		this.dimensionTables = dimensionTables;
 		this.naming = naming;
+		this.aliasTable = aliasTable;
 	}
 
 	private static String remarks(Dimension dimension) {
@@ -98,9 +102,9 @@ public final class DimensionTable extends VessTable {
 		Set<String> taken = new HashSet<>();
 
 		add(list, getters, taken, Column.text("NAME", MEMBER_NAME).notNull(), Member::getName);
-		String defaultTable = outline.getDefaultAliasTable();
-		add(list, getters, taken, Column.text("ALIAS", MEMBER_NAME).remarks("The alias in the " + defaultTable + " alias table"),
-				member -> member.getAlias(defaultTable));
+		String aliasTable = outline.aliasTable(this.aliasTable);
+		add(list, getters, taken, Column.text("ALIAS", MEMBER_NAME).remarks("The alias in the " + aliasTable + " alias table"),
+				member -> member.getAlias(aliasTable));
 		add(list, getters, taken, Column.text("PARENT", MEMBER_NAME), member -> member.getParent() == null ? null : member.getParent().getName());
 		add(list, getters, taken, Column.integer("LEVEL").notNull().remarks("0 for a member without children"), Member::getLevel);
 		add(list, getters, taken, Column.integer("GENERATION").notNull().remarks("1 for the dimension itself"), Member::getGeneration);
@@ -130,16 +134,6 @@ public final class DimensionTable extends VessTable {
 						Member ancestor = member.getAncestor(number);
 						return ancestor == null ? null : ancestor.getName();
 					});
-		}
-
-		// The aliases in each other table
-		for (String table : outline.getAliasTables()) {
-			if (table.equals(defaultTable)) {
-				continue;
-			}
-			String columnName = naming.unique(taken, table, "Alias");
-			add(list, getters, taken, Column.text(columnName, MEMBER_NAME).remarks("The alias in the " + table + " alias table"),
-					member -> member.getAlias(table));
 		}
 
 		// Each attribute that describes the members, with its own type

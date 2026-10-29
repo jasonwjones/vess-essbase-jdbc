@@ -74,7 +74,7 @@ public final class OutlineFunction implements ScalarFunction, ImplementableFunct
 				Column.integer("RESULT"), "memberGeneration", cubeKey));
 		functions.add(new OutlineFunction("MEMBER_PARENT", "A member's parent", List.of(member), Column.text("RESULT", MEMBER_NAME),
 				"memberParent", cubeKey));
-		functions.add(new OutlineFunction("MEMBER_ALIAS", "A member's alias in the default alias table", List.of(member),
+		functions.add(new OutlineFunction("MEMBER_ALIAS", "A member's alias, in the alias table the connection uses", List.of(member),
 				Column.text("RESULT", MEMBER_NAME), "memberAlias", cubeKey));
 		functions.add(new OutlineFunction("MEMBER_ALIAS", "A member's alias in the given alias table: MEMBER_ALIAS(Product, 'Long Names')",
 				List.of(member, Column.text("ALIAS_TABLE", MEMBER_NAME)), Column.text("RESULT", MEMBER_NAME), "memberAliasIn", cubeKey));

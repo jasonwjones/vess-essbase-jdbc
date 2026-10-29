@@ -65,7 +65,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 		this.application = application;
 		this.cube = cube;
 		String key = context.getId() + application + "/" + cube;
-		OutlineFunctions.register(key, () -> context.outline(application, cube));
+		OutlineFunctions.register(key, () -> context.outline(application, cube), context.getSettings().aliasTable());
 		this.functions = OutlineFunction.forCube(key);
 	}
 
@@ -156,7 +156,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 			list.addAll(fixedTables());
 			for (Dimension dimension : outline.getDimensions()) {
 				list.add(new DimensionTable(dimensionTable(dimension), () -> context.outline(application, cube), application, cube, dimension,
-						this::dimensionTable, naming));
+						this::dimensionTable, naming, context.getSettings().aliasTable()));
 			}
 			tables = list;
 		}
@@ -236,7 +236,7 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 				List.of("OUTLINE_ORDER"), conditions -> {
 					Outline outline = outline();
 					Set<String> wanted = conditions.values(1);
-					String aliasTable = outline.getDefaultAliasTable();
+					String aliasTable = outline.aliasTable(context.getSettings().aliasTable());
 					List<Object[]> rows = new ArrayList<>();
 					for (Dimension dimension : outline.getDimensions()) {
 						if (wanted != null && !wanted.contains(dimension.getName())) {

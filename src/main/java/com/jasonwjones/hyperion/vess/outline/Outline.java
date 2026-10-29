@@ -114,6 +114,22 @@ public final class Outline {
 	}
 
 	/**
+	 * @param wanted the name of an alias table, in any case, or null
+	 * @return the outline's alias table of that name, or its default one if
+	 *         it has none by that name
+	 */
+	public String aliasTable(String wanted) {
+		if (wanted != null) {
+			for (String table : aliasTables) {
+				if (table.equalsIgnoreCase(wanted.trim())) {
+					return table;
+				}
+			}
+		}
+		return defaultAliasTable;
+	}
+
+	/**
 	 * @return every dimension, attribute dimensions included, in outline order
 	 */
 	public List<Dimension> getDimensions() {

@@ -75,6 +75,9 @@ public class VessConnection implements Connection {
 
 	static final String DIMENSION_PREFIX = "dimension.prefix";
 
+	/** Shared with Thriller, which is given it too */
+	static final String ALIAS_TABLE = "alias.table";
+
 	/** A WebLogic cookie to present with a session id, as Thriller takes it */
 	static final String WEBLOGIC_COOKIE = "weblogic.cookie";
 
@@ -207,7 +210,8 @@ public class VessConnection implements Connection {
 			Naming naming = new Naming(style, settings.getOrDefault(DIMENSION_PREFIX, defaults.naming().dimensionPrefix()).trim());
 			return new ServerContext.Settings(outlineCache, chunkCells, chunkMembers,
 					settings.getOrDefault(SERVER_CATALOG, defaults.serverCatalog()),
-					Boolean.parseBoolean(settings.getOrDefault(BROWSE_STOPPED, String.valueOf(defaults.browseStopped()))), naming);
+					Boolean.parseBoolean(settings.getOrDefault(BROWSE_STOPPED, String.valueOf(defaults.browseStopped()))), naming,
+					settings.containsKey(ALIAS_TABLE) && !settings.get(ALIAS_TABLE).isBlank() ? settings.get(ALIAS_TABLE).trim() : null);
 		} catch (NumberFormatException e) {
 			throw new VessException(OUTLINE_CACHE + ", " + CHUNK_CELLS + " and " + CHUNK_MEMBERS + " take whole numbers: " + e.getMessage(), e);
 		}

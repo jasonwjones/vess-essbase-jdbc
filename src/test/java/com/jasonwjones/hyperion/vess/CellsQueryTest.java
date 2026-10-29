@@ -160,6 +160,26 @@ class CellsQueryTest {
 	}
 
 	@Test
+	void hasOneAliasColumn() throws SQLException {
+		assertEquals(List.of("NAME", "ALIAS", "PARENT", "LEVEL", "GENERATION", "STORAGE", "CONSOLIDATION", "FORMULA", "UDAS", "CHILDREN",
+				"OUTLINE_ORDER", "CATEGORY", "PRODUCT_SKU", "CAFFEINATED", "OUNCES", "PKG_TYPE", "INTRO_DATE"),
+				engine.columns("select * from DIM_PRODUCT"));
+		assertEquals(List.of(List.of("Cola")), engine.query("select ALIAS from DIM_PRODUCT where NAME = '100-10'"));
+	}
+
+	@Test
+	void showsTheAliasTableChosen() throws SQLException {
+		try (TestEngine longNames = new TestEngine(new FakeCube(), "long names")) {
+			assertEquals(List.of(List.of("Quarter1", "Quarter1", "Januar")),
+					longNames.query("select ALIAS, MEMBER_ALIAS('Qtr1'), MEMBER_ALIAS('Jan', 'GermanNames') from DIM_YEAR where NAME = 'Qtr1'"));
+		}
+		try (TestEngine unknown = new TestEngine(new FakeCube(), "Klingon")) {
+			assertEquals(List.of(List.of("Cola")), unknown.query("select ALIAS from DIM_PRODUCT where NAME = '100-10'"),
+					"a cube without that alias table shows its default");
+		}
+	}
+
+	@Test
 	void answersOutlineFunctions() throws SQLException {
 		assertEquals(List.of(List.of(true, false, 3, 1, "100", "Cola", "Product", "Can", true)),
 				engine.query("select IS_DESCENDANT('100-20', 'Diet'), IS_CHILD('100-20', 'Product'), MEMBER_GENERATION('100-10'),"

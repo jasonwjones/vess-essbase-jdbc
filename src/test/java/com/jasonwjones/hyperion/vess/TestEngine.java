@@ -45,10 +45,18 @@ final class TestEngine implements AutoCloseable, Dml.Target {
 	private boolean readOnly;
 
 	TestEngine(FakeCube cube) throws SQLException {
+		this(cube, null);
+	}
+
+	/**
+	 * @param aliasTable the alias table ALIAS columns show, or null for the
+	 *            default
+	 */
+	TestEngine(FakeCube cube, String aliasTable) throws SQLException {
 		this.cube = cube;
 		this.connection = Engine.connect();
 		String key = "test" + (++counter) + "/Sample/Basic";
-		OutlineFunctions.register(key, cube::outline);
+		OutlineFunctions.register(key, cube::outline, aliasTable);
 		List<OutlineFunction> functions = OutlineFunction.forCube(key);
 		Naming naming = Naming.DEFAULTS;
 		Map<String, String> dimensionTables = CubeSchema.dimensionTables(cube.outline(), naming);
@@ -57,7 +65,7 @@ final class TestEngine implements AutoCloseable, Dml.Target {
 		tables.put("FACTS", new CellsTable("FACTS", cube, "Sample", "Basic", true, tableOf, naming));
 		for (Dimension dimension : cube.outline().getDimensions()) {
 			String name = tableOf.apply(dimension);
-			tables.put(name, new DimensionTable(name, cube::outline, "Sample", "Basic", dimension, tableOf, naming));
+			tables.put(name, new DimensionTable(name, cube::outline, "Sample", "Basic", dimension, tableOf, naming, aliasTable));
 		}
 		Schema basic = new AbstractSchema() {
 
@@ -117,6 +125,19 @@ final class TestEngine implements AutoCloseable, Dml.Target {
 			throw VessStatement.translate(e);
 		}
 		return rows;
+	}
+
+	/**
+	 * The names of the columns a query answers with.
+	 */
+	List<String> columns(String sql) throws SQLException {
+		List<String> names = new ArrayList<>();
+		try (Statement statement = connection.createStatement(); ResultSet results = statement.executeQuery(sql)) {
+			for (int index = 1; index <= results.getMetaData().getColumnCount(); index++) {
+				names.add(results.getMetaData().getColumnName(index));
+			}
+		}
+		return names;
 	}
 
 	int dml(String sql, Object... parameters) throws SQLException {

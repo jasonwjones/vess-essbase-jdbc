@@ -1,7 +1,7 @@
 /*
 # Every alias table
 
-Each alias table is a column of the dimension's table; ALIASES has them all as rows, for when they're wanted together. Here are four of Sample.Basic's six.
+A dimension's table has the alias from one alias table: the cube's default, or the one the connection's alias.table setting names. ALIASES has every alias in every alias table, a row each. Here are four of Sample.Basic's six.
 */
 SELECT MEMBER, ALIAS_TABLE, ALIAS
 FROM Sample.Basic.ALIASES

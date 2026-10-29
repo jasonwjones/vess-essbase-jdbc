@@ -94,11 +94,14 @@ public final class ServerContext {
 	 * @param browseStopped whether browsing lists the tables of a stopped
 	 *            application's cubes that need its outline, which starts it
 	 * @param naming how names from Essbase become names of tables and columns
+	 * @param aliasTable the alias table that ALIAS columns show, or null for
+	 *            each cube's default
 	 */
 	public record Settings(Duration outlineCache, long chunkCells, int chunkMembers, String serverCatalog, boolean browseStopped,
-			Naming naming) {
+			Naming naming, String aliasTable) {
 
-		public static final Settings DEFAULTS = new Settings(Duration.ofMinutes(5), 500_000, 2_000, "ESSBASE", false, Naming.DEFAULTS);
+		public static final Settings DEFAULTS = new Settings(Duration.ofMinutes(5), 500_000, 2_000, "ESSBASE", false, Naming.DEFAULTS,
+				null);
 
 	}
 
