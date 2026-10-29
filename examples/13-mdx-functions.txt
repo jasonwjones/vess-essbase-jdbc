@@ -1,0 +1,7 @@
++------------+----------------------------------------------------------------------+
+| NAME       | SYNTAX                                                               |
++------------+----------------------------------------------------------------------+
+| TopCount   | TopCount ( set , index [,numeric_value_expression ] )                |
+| TopPercent | TopPercent ( set, percentage, numeric_value_expression )             |
+| TopSum     | TopSum ( set, numeric_value_expression1, numeric_value_expression2 ) |
++------------+----------------------------------------------------------------------+

@@ -1,0 +1,10 @@
++--------+--------------+------------+
+| MEMBER | ALIAS_TABLE  | ALIAS      |
++--------+--------------+------------+
+| 100-10 | Default      | Cola       |
+| 100-10 | GermanNames  | Cola       |
+| 100-10 | RussianNames | Кола       |
+| Qtr1   | GermanNames  | 1. Quartal |
+| Qtr1   | Long Names   | Quarter1   |
+| Qtr1   | RussianNames | Квартал 1  |
++--------+--------------+------------+
