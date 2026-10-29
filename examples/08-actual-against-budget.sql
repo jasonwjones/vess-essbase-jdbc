@@ -3,11 +3,11 @@
 
 Scenarios side by side, the way a report wants them, by turning rows into columns with conditional sums.
 */
-SELECT Market,
-       SUM(CASE WHEN Scenario = 'Actual' THEN VALUE END) AS Actual,
-       SUM(CASE WHEN Scenario = 'Budget' THEN VALUE END) AS Budget
+SELECT MARKET,
+       SUM(CASE WHEN SCENARIO = 'Actual' THEN VALUE END) AS ACTUAL,
+       SUM(CASE WHEN SCENARIO = 'Budget' THEN VALUE END) AS BUDGET
 FROM Sample.Basic.CELLS
-WHERE Year = 'Year' AND Measures = 'Sales' AND Product = 'Product'
-  AND IS_CHILD(Market, 'Market')
-GROUP BY Market
-ORDER BY Market
+WHERE YEAR = 'Year' AND MEASURES = 'Sales' AND PRODUCT = 'Product'
+  AND IS_CHILD(MARKET, 'Market')
+GROUP BY MARKET
+ORDER BY MARKET

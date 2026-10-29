@@ -20,7 +20,9 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.jasonwjones.hyperion.vess.cells.CellsTable;
 import com.jasonwjones.hyperion.vess.outline.Dimension;
+import com.jasonwjones.hyperion.vess.schema.CubeSchema;
 import com.jasonwjones.hyperion.vess.schema.DimensionTable;
+import com.jasonwjones.hyperion.vess.schema.Naming;
 import com.jasonwjones.hyperion.vess.schema.OutlineFunction;
 import com.jasonwjones.hyperion.vess.schema.OutlineFunctions;
 import com.jasonwjones.hyperion.vess.schema.VessTable;
@@ -48,10 +50,14 @@ final class TestEngine implements AutoCloseable, Dml.Target {
 		String key = "test" + (++counter) + "/Sample/Basic";
 		OutlineFunctions.register(key, cube::outline);
 		List<OutlineFunction> functions = OutlineFunction.forCube(key);
-		tables.put("CELLS", new CellsTable("CELLS", cube, "Sample", "Basic", false, Dimension::getName));
-		tables.put("FACTS", new CellsTable("FACTS", cube, "Sample", "Basic", true, Dimension::getName));
+		Naming naming = Naming.DEFAULTS;
+		Map<String, String> dimensionTables = CubeSchema.dimensionTables(cube.outline(), naming);
+		java.util.function.Function<Dimension, String> tableOf = dimension -> dimensionTables.get(dimension.getName());
+		tables.put("CELLS", new CellsTable("CELLS", cube, "Sample", "Basic", false, tableOf, naming));
+		tables.put("FACTS", new CellsTable("FACTS", cube, "Sample", "Basic", true, tableOf, naming));
 		for (Dimension dimension : cube.outline().getDimensions()) {
-			tables.put(dimension.getName(), new DimensionTable(dimension.getName(), cube::outline, "Sample", "Basic", dimension, Dimension::getName));
+			String name = tableOf.apply(dimension);
+			tables.put(name, new DimensionTable(name, cube::outline, "Sample", "Basic", dimension, tableOf, naming));
 		}
 		Schema basic = new AbstractSchema() {
 

@@ -6,16 +6,16 @@ fact table, substitution variables and scripts are tables you can edit, and calc
 procedures. It talks to Essbase over the REST API, so it needs no Oracle software.
 
 ```sql
-SELECT p.Category, p.Caffeinated, SUM(f.VALUE) AS Sales
+SELECT p.CATEGORY, p.CAFFEINATED, SUM(f.VALUE) AS SALES
 FROM Sample.Basic.FACTS f
-JOIN Sample.Basic.Product p ON f.Product = p.NAME
-WHERE f.Measures = 'Sales' AND f.Scenario = 'Actual'
-GROUP BY p.Category, p.Caffeinated
+JOIN Sample.Basic.DIM_PRODUCT p ON f.PRODUCT = p.NAME
+WHERE f.MEASURES = 'Sales' AND f.SCENARIO = 'Actual'
+GROUP BY p.CATEGORY, p.CAFFEINATED
 ```
 
 ```
 +----------+-------------+----------+
-| Category | Caffeinated | Sales    |
+| CATEGORY | CAFFEINATED | SALES    |
 +----------+-------------+----------+
 | 100      | false       | 12841.0  |
 | 100      | true        | 93293.0  |
@@ -71,6 +71,8 @@ settings put them; the URL wins:
 | `outline.cache` | Seconds to keep an outline before reading it again; 300 by default |
 | `chunk.cells`, `chunk.members` | The most cells one MDX query asks for (500,000), and the most members of one dimension it names (2,000) |
 | `server.catalog` | The name of the catalog holding the server's own tables; `ESSBASE` by default |
+| `dimension.prefix` | What each dimension's table is named with first; `DIM_` by default, and it can be empty |
+| `dimension.names` | How names that come from Essbase are written as names of tables and columns: `upper` (the default) or `lower` make them identifiers, so Pkg Type is `PKG_TYPE`; `as-is` keeps Essbase's spelling |
 
 From code:
 
@@ -96,7 +98,7 @@ and keys described below. Open a table to see its rows, and right-click a cube's
 **Diagrams > Show Diagram** to see it as a star: CELLS in the middle, a line to each dimension's
 table, and from those to their attribute dimensions.
 
-Choosing a cube for a query console makes it the one names refer to, so `SELECT * FROM Product`
+Choosing a cube for a query console makes it the one names refer to, so `SELECT * FROM DIM_PRODUCT`
 works, and the outline functions need no prefix. Ticking **Read-only** on the data source makes the
 connection read-only, as `readonly=true` does.
 
@@ -136,7 +138,7 @@ Server.
 | --- | --- |
 | `CELLS` | Every value in the cube, at every level, totals and dynamic calculations included: a column for each dimension and `VALUE` |
 | `FACTS` | The values loaded at level 0 of each dimension: the cube as a fact table |
-| one for each dimension | Its members, a row each: name, alias, parent, level, generation, storage, consolidation, formula and UDAs; a column for each generation, holding the member's ancestor there; a column for each other alias table; and a column for each attribute, typed as a boolean, number, date or text |
+| `DIM_` and each dimension | Its members, a row each, in `DIM_PRODUCT` for Product: name, alias, parent, level, generation, storage, consolidation, formula and UDAs; a column for each generation, holding the member's ancestor there; a column for each other alias table; and a column for each attribute, typed as a boolean, number, date or text |
 | `DIMENSIONS` | Each dimension: type, dense or sparse, members, generations, levels |
 | `MEMBERS` | Every member of every dimension where it sits in the outline, shared members included |
 | `GENERATIONS`, `LEVELS` | Each dimension's generations and levels, with their names |
@@ -188,7 +190,7 @@ what the query wants:
 
 - **Each condition about one dimension is tried against that dimension's members first**, and only
   the members it holds for are asked for. That covers `=`, `IN`, `LIKE`, `<>`, anything you can
-  write about one column, and the outline functions: `IS_DESCENDANT(Product, 'Colas')` reads the
+  write about one column, and the outline functions: `IS_DESCENDANT(PRODUCT, '100')` reads the
   colas and nothing else. A condition about two dimensions, or about the value, is applied to the
   rows that come back. Either way the answer is the same; only the reading differs.
 - A dimension narrowed to one member goes in the MDX query's slicer; the largest dense one goes on
@@ -202,16 +204,16 @@ reads in about three and a half seconds; the values for one market take a fifth 
 Some things to know:
 
 - **A cell that's #Missing isn't a row.** The tables hold the values the cube has.
-- **Members are their names, not their aliases**: `Product = '100-10'`, not `'Cola'`. Use
-  `MEMBER_ALIAS(Product) = 'Cola'`, or join the dimension's table, to work with aliases.
-- **Names are compared exactly**, as SQL compares text, so `Market = 'new york'` matches nothing.
+- **Members are their names, not their aliases**: `PRODUCT = '100-10'`, not `'Cola'`. Use
+  `MEMBER_ALIAS(PRODUCT) = 'Cola'`, or join the dimension's table, to work with aliases.
+- **Names are compared exactly**, as SQL compares text, so `MARKET = 'new york'` matches nothing.
   Table and column names, on the other hand, aren't case sensitive.
 - **CELLS has every level**, so summing it counts each value again in every total above it. Sum
-  FACTS, whose values are those loaded, or pick the level you want: `Product = 'Product'` for the
-  total, `IS_CHILD(Market, 'Market')` for the regions.
+  FACTS, whose values are those loaded, or pick the level you want: `PRODUCT = 'Product'` for the
+  total, `IS_CHILD(MARKET, 'Market')` for the regions.
 - **Shared members appear once**, where they're stored; `IS_DESCENDANT` counts them where they're
   shared, so Diet's members are under Diet.
-- Names Essbase uses that SQL reserves, such as Year, Time and Value, needn't be quoted.
+- Names that SQL reserves, such as `YEAR`, `TIME` and `VALUE`, needn't be quoted.
 
 ## Changing things
 
@@ -223,9 +225,9 @@ Some things to know:
 | `DELETE FROM SERVER.SESSIONS WHERE USER_NAME = 'jdoe'` | Logs someone off |
 | `UPDATE SERVER.APPLICATIONS SET STATUS = 'Stopped' WHERE NAME = 'Demo'` | Stops an application |
 | `INSERT INTO CELLS VALUES ('Jan', 'Sales', '100-10', 'New York', 'Budget', 700)` | Writes a value |
-| `UPDATE FACTS SET VALUE = VALUE * 1.05 WHERE Scenario = 'Budget'` | Raises the budget by five percent |
-| `INSERT INTO CELLS SELECT Year, Measures, Product, Market, 'Budget', VALUE FROM FACTS WHERE Scenario = 'Actual'` | Copies actuals to budget |
-| `DELETE FROM FACTS WHERE Scenario = 'Budget' AND Year = 'Dec'` | Clears December's budget |
+| `UPDATE FACTS SET VALUE = VALUE * 1.05 WHERE SCENARIO = 'Budget'` | Raises the budget by five percent |
+| `INSERT INTO CELLS SELECT YEAR, MEASURES, PRODUCT, MARKET, 'Budget', VALUE FROM FACTS WHERE SCENARIO = 'Actual'` | Copies actuals to budget |
+| `DELETE FROM FACTS WHERE SCENARIO = 'Budget' AND YEAR = 'Dec'` | Clears December's budget |
 
 Writes to CELLS and FACTS go through Essbase's streaming data load, with no load rule: inserting a
 row writes its value, overwriting what was there; updating one writes the new value; deleting one

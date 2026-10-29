@@ -38,6 +38,7 @@ import com.appliedolap.essbase.impl.EssServerImpl;
 import com.jasonwjones.hyperion.thriller.ThrillerDriver;
 import com.jasonwjones.hyperion.vess.schema.ApplicationSchema;
 import com.jasonwjones.hyperion.vess.schema.CubeSchema;
+import com.jasonwjones.hyperion.vess.schema.Naming;
 import com.jasonwjones.hyperion.vess.schema.OutlineFunctions;
 import com.jasonwjones.hyperion.vess.schema.ServerContext;
 import com.jasonwjones.hyperion.vess.schema.ServerSchema;
@@ -70,12 +71,16 @@ public class VessConnection implements Connection {
 
 	static final String BROWSE_STOPPED = "browse.stopped";
 
+	static final String DIMENSION_NAMES = "dimension.names";
+
+	static final String DIMENSION_PREFIX = "dimension.prefix";
+
 	/** A WebLogic cookie to present with a session id, as Thriller takes it */
 	static final String WEBLOGIC_COOKIE = "weblogic.cookie";
 
 	/** Settings for Vess itself, which Thriller isn't given */
 	private static final Set<String> VESS_SETTINGS = Set.of(APP, CUBE, READ_ONLY, OUTLINE_CACHE, CHUNK_CELLS, CHUNK_MEMBERS, SERVER_CATALOG,
-			BROWSE_STOPPED);
+			BROWSE_STOPPED, DIMENSION_NAMES, DIMENSION_PREFIX);
 
 	private static final Logger logger = LoggerFactory.getLogger(VessConnection.class);
 
@@ -193,9 +198,16 @@ public class VessConnection implements Connection {
 			if (chunkCells < 1 || chunkMembers < 1) {
 				throw new VessException(CHUNK_CELLS + " and " + CHUNK_MEMBERS + " must be at least 1");
 			}
+			Naming.Style style;
+			try {
+				style = settings.containsKey(DIMENSION_NAMES) ? Naming.Style.parse(settings.get(DIMENSION_NAMES)) : defaults.naming().style();
+			} catch (IllegalArgumentException e) {
+				throw new VessException(DIMENSION_NAMES + " " + e.getMessage(), e);
+			}
+			Naming naming = new Naming(style, settings.getOrDefault(DIMENSION_PREFIX, defaults.naming().dimensionPrefix()).trim());
 			return new ServerContext.Settings(outlineCache, chunkCells, chunkMembers,
 					settings.getOrDefault(SERVER_CATALOG, defaults.serverCatalog()),
-					Boolean.parseBoolean(settings.getOrDefault(BROWSE_STOPPED, String.valueOf(defaults.browseStopped()))));
+					Boolean.parseBoolean(settings.getOrDefault(BROWSE_STOPPED, String.valueOf(defaults.browseStopped()))), naming);
 		} catch (NumberFormatException e) {
 			throw new VessException(OUTLINE_CACHE + ", " + CHUNK_CELLS + " and " + CHUNK_MEMBERS + " take whole numbers: " + e.getMessage(), e);
 		}

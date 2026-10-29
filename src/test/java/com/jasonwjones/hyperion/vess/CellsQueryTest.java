@@ -110,7 +110,7 @@ class CellsQueryTest {
 
 	@Test
 	void joinsToADimensionTable() throws SQLException {
-		List<List<Object>> rows = engine.query("select c.Product, p.ALIAS, c.Value from Cells c join Product p on c.Product = p.NAME"
+		List<List<Object>> rows = engine.query("select c.PRODUCT, p.ALIAS, c.VALUE from CELLS c join DIM_PRODUCT p on c.PRODUCT = p.NAME"
 				+ " where c.Year = 'Jan' and c.Measures = 'Sales' and c.Market = 'New York' and c.Scenario = 'Actual' order by c.Value");
 		assertEquals(List.of(List.of("100-20", "Diet Cola", 200.0), List.of("100-10", "Cola", 678.0)), rows);
 	}
@@ -151,12 +151,12 @@ class CellsQueryTest {
 
 	@Test
 	void showsDimensionsAsTables() throws SQLException {
-		List<List<Object>> rows = engine.query("select NAME, ALIAS, Category, \"Product SKU\", Caffeinated, Ounces, \"Intro Date\", LEVEL"
-				+ " from Product where NAME = '100-30'");
+		List<List<Object>> rows = engine.query("select NAME, ALIAS, CATEGORY, PRODUCT_SKU, CAFFEINATED, OUNCES, INTRO_DATE, LEVEL"
+				+ " from DIM_PRODUCT where NAME = '100-30'");
 		assertEquals(List.of(List.of("100-30", "Caffeine Free Cola", "100", "100-30", false, 16.0, java.sql.Date.valueOf("1996-04-01"), 0)), rows);
-		assertEquals(List.of(List.of(19L)), engine.query("select count(*) from Product"), "shared members aren't repeated");
+		assertEquals(List.of(List.of(19L)), engine.query("select count(*) from dim_product"), "shared members aren't repeated");
 		assertEquals(List.of(List.of("Central"), List.of("East"), List.of("South"), List.of("West")),
-				engine.query("select NAME from Market where IS_CHILD(NAME, 'Market') order by NAME"));
+				engine.query("select NAME from DIM_MARKET where IS_CHILD(NAME, 'Market') order by NAME"));
 	}
 
 	@Test

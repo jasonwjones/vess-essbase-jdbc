@@ -2,9 +2,11 @@ package com.jasonwjones.hyperion.vess.cells;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -17,6 +19,7 @@ import com.jasonwjones.hyperion.vess.outline.Outline;
 import com.jasonwjones.hyperion.vess.schema.Column;
 import com.jasonwjones.hyperion.vess.schema.Conditions;
 import com.jasonwjones.hyperion.vess.schema.ForeignKey;
+import com.jasonwjones.hyperion.vess.schema.Naming;
 import com.jasonwjones.hyperion.vess.schema.VessTable;
 
 /**
@@ -46,6 +49,8 @@ public final class CellsTable extends VessTable {
 
 	private final Function<Dimension, String> dimensionTables;
 
+	private final Naming naming;
+
 	private List<Column> columns;
 
 	private List<Dimension> dimensions;
@@ -55,9 +60,10 @@ public final class CellsTable extends VessTable {
 	 *            every member
 	 * @param dimensionTables the name of each dimension's table, for the keys
 	 *            from this one to them
+	 * @param naming how the dimensions' names become the columns' names
 	 */
 	public CellsTable(String name, CellSource source, String application, String cube, boolean facts,
-			Function<Dimension, String> dimensionTables) {
+			Function<Dimension, String> dimensionTables, Naming naming) {
 		super(name, facts ? "The values loaded into the cube, at level 0 of each dimension: the cube as a fact table"
 				: "Every value in the cube, at any level, totals and dynamic calculations included; a row each");
 		this.source = source;
@@ -65,6 +71,7 @@ public final class CellsTable extends VessTable {
 		this.cube = cube;
 		this.facts = facts;
 		this.dimensionTables = dimensionTables;
+		this.naming = naming;
 	}
 
 	private synchronized List<Dimension> dimensions() throws SQLException {
@@ -78,9 +85,10 @@ public final class CellsTable extends VessTable {
 	public synchronized List<Column> getColumns() {
 		if (columns == null) {
 			List<Column> list = new ArrayList<>();
+			Set<String> taken = new HashSet<>();
 			try {
 				for (Dimension dimension : dimensions()) {
-					list.add(Column.text(dimension.getName(), Column.MEMBER_NAME).notNull().writable()
+					list.add(Column.text(naming.unique(taken, dimension.getName(), "Dimension"), Column.MEMBER_NAME).notNull().writable()
 							.remarks("A member of " + dimension.getName() + (facts ? ", at level 0" : "")));
 				}
 			} catch (SQLException e) {
@@ -118,9 +126,12 @@ public final class CellsTable extends VessTable {
 	public List<ForeignKey> getForeignKeys() {
 		List<ForeignKey> keys = new ArrayList<>();
 		try {
-			for (Dimension dimension : dimensions()) {
-				keys.add(ForeignKey.of(getName() + "_" + dimension.getName(), dimension.getName(), application, cube,
-						dimensionTables.apply(dimension), "NAME"));
+			List<Dimension> dimensions = dimensions();
+			List<Column> columns = getColumns();
+			for (int index = 0; index < dimensions.size(); index++) {
+				Dimension dimension = dimensions.get(index);
+				String column = columns.get(index).getName();
+				keys.add(ForeignKey.of(getName() + "_" + column, column, application, cube, dimensionTables.apply(dimension), "NAME"));
 			}
 		} catch (SQLException e) {
 			throw new VessException.Unchecked(e);

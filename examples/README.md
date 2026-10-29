@@ -32,18 +32,18 @@ ORDER BY NUMBER
 
 ## A dimension as a table ([02-a-dimension-as-a-table.sql](02-a-dimension-as-a-table.sql))
 
-Each dimension is a table of its own, a row for each member. Besides the alias, parent, level and generation, there's a column for each named generation, holding the member's ancestor there, and one for each attribute, with its type: Caffeinated is a boolean, Ounces a number and Intro Date a date.
+Each dimension is a table of its own, a row for each member: DIM_PRODUCT for Product. Besides the alias, parent, level and generation, there's a column for each named generation, holding the member's ancestor there, and one for each attribute, with its type: CAFFEINATED is a boolean, OUNCES a number and INTRO_DATE a date.
 
 ```
-SELECT NAME, ALIAS, Category, Caffeinated, Ounces, "Pkg Type", "Intro Date"
-FROM Sample.Basic.Product
+SELECT NAME, ALIAS, CATEGORY, CAFFEINATED, OUNCES, PKG_TYPE, INTRO_DATE
+FROM Sample.Basic.DIM_PRODUCT
 WHERE LEVEL = 0
 ORDER BY OUTLINE_ORDER
 ```
 
 ```
 +--------+--------------------+----------+-------------+--------+----------+------------+
-| NAME   | ALIAS              | Category | Caffeinated | Ounces | Pkg Type | Intro Date |
+| NAME   | ALIAS              | CATEGORY | CAFFEINATED | OUNCES | PKG_TYPE | INTRO_DATE |
 +--------+--------------------+----------+-------------+--------+----------+------------+
 | 100-10 | Cola               | 100      | true        | 12.0   | Can      | 1996-03-25 |
 | 100-20 | Diet Cola          | 100      | true        | 12.0   | Can      | 1996-04-01 |
@@ -68,7 +68,7 @@ CELLS holds every value in the cube, with a column for each dimension. Name a me
 ```
 SELECT VALUE
 FROM Sample.Basic.CELLS
-WHERE Year = 'Jan' AND Measures = 'Sales' AND Product = '100-10' AND Market = 'New York' AND Scenario = 'Actual'
+WHERE YEAR = 'Jan' AND MEASURES = 'Sales' AND PRODUCT = '100-10' AND MARKET = 'New York' AND SCENARIO = 'Actual'
 ```
 
 ```
@@ -84,14 +84,14 @@ WHERE Year = 'Jan' AND Measures = 'Sales' AND Product = '100-10' AND Market = 'N
 CELLS has members at every level, so it answers with Essbase's own totals and dynamic calculations: here a quarter, a region and a product family, for every scenario, Variance and Variance % included.
 
 ```
-SELECT Scenario, VALUE
+SELECT SCENARIO, VALUE
 FROM Sample.Basic.CELLS
-WHERE Year = 'Qtr1' AND Measures = 'Sales' AND Product = '100' AND Market = 'East'
+WHERE YEAR = 'Qtr1' AND MEASURES = 'Sales' AND PRODUCT = '100' AND MARKET = 'East'
 ```
 
 ```
 +------------+-------------------+
-| Scenario   | VALUE             |
+| SCENARIO   | VALUE             |
 +------------+-------------------+
 | Scenario   | 6292.0            |
 | Actual     | 6292.0            |
@@ -103,20 +103,20 @@ WHERE Year = 'Qtr1' AND Measures = 'Sales' AND Product = '100' AND Market = 'Eas
 
 ## The cube as a fact table ([05-facts-by-attribute.sql](05-facts-by-attribute.sql))
 
-FACTS holds just the values loaded at level 0, so they add up the way SQL expects. Joined to the Product table, they can be grouped by anything it has: here by category and whether the drink has caffeine.
+FACTS holds just the values loaded at level 0, so they add up the way SQL expects. Joined to DIM_PRODUCT, they can be grouped by anything it has: here by category and whether the drink has caffeine.
 
 ```
-SELECT p.Category, p.Caffeinated, SUM(f.VALUE) AS Sales
+SELECT p.CATEGORY, p.CAFFEINATED, SUM(f.VALUE) AS SALES
 FROM Sample.Basic.FACTS f
-JOIN Sample.Basic.Product p ON f.Product = p.NAME
-WHERE f.Measures = 'Sales' AND f.Scenario = 'Actual'
-GROUP BY p.Category, p.Caffeinated
-ORDER BY p.Category, p.Caffeinated
+JOIN Sample.Basic.DIM_PRODUCT p ON f.PRODUCT = p.NAME
+WHERE f.MEASURES = 'Sales' AND f.SCENARIO = 'Actual'
+GROUP BY p.CATEGORY, p.CAFFEINATED
+ORDER BY p.CATEGORY, p.CAFFEINATED
 ```
 
 ```
 +----------+-------------+----------+
-| Category | Caffeinated | Sales    |
+| CATEGORY | CAFFEINATED | SALES    |
 +----------+-------------+----------+
 | 100      | false       | 12841.0  |
 | 100      | true        | 93293.0  |
@@ -132,17 +132,17 @@ ORDER BY p.Category, p.Caffeinated
 Functions such as IS_DESCENDANT, IS_CHILD and HAS_UDA answer from the outline. In a WHERE clause they narrow what's read, since Vess tries each against the members first. Diet shares products from other families, and they count as under it.
 
 ```
-SELECT Product, MEMBER_ALIAS(Product) AS Alias, SUM(VALUE) AS Sales
+SELECT PRODUCT, MEMBER_ALIAS(PRODUCT) AS ALIAS, SUM(VALUE) AS SALES
 FROM Sample.Basic.FACTS
-WHERE IS_DESCENDANT(Product, 'Diet') AND HAS_UDA(Market, 'Major Market')
-  AND Measures = 'Sales' AND Scenario = 'Actual'
-GROUP BY Product
-ORDER BY Product
+WHERE IS_DESCENDANT(PRODUCT, 'Diet') AND HAS_UDA(MARKET, 'Major Market')
+  AND MEASURES = 'Sales' AND SCENARIO = 'Actual'
+GROUP BY PRODUCT
+ORDER BY PRODUCT
 ```
 
 ```
 +---------+----------------+---------+
-| Product | Alias          | Sales   |
+| PRODUCT | ALIAS          | SALES   |
 +---------+----------------+---------+
 | 100-20  | Diet Cola      | 14902.0 |
 | 200-20  | Diet Root Beer | 21078.0 |
@@ -152,25 +152,25 @@ ORDER BY Product
 
 ## Ranking with SQL ([07-ranking.sql](07-ranking.sql))
 
-All of SQL is there once the values are rows. Here each region's best-selling product, ranked by a window function, with the region from the Market table's generation column.
+All of SQL is there once the values are rows. Here each region's best-selling product, ranked by a window function, with the region from the REGION generation column of DIM_MARKET.
 
 ```
-SELECT Region, Product, Sales
+SELECT REGION, PRODUCT, SALES
 FROM (
-  SELECT m.Region, f.Product, SUM(f.VALUE) AS Sales,
-         RANK() OVER (PARTITION BY m.Region ORDER BY SUM(f.VALUE) DESC) AS Place
+  SELECT m.REGION, f.PRODUCT, SUM(f.VALUE) AS SALES,
+         RANK() OVER (PARTITION BY m.REGION ORDER BY SUM(f.VALUE) DESC) AS PLACE
   FROM Sample.Basic.FACTS f
-  JOIN Sample.Basic.Market m ON f.Market = m.NAME
-  WHERE f.Measures = 'Sales' AND f.Scenario = 'Actual'
-  GROUP BY m.Region, f.Product
+  JOIN Sample.Basic.DIM_MARKET m ON f.MARKET = m.NAME
+  WHERE f.MEASURES = 'Sales' AND f.SCENARIO = 'Actual'
+  GROUP BY m.REGION, f.PRODUCT
 ) ranked
-WHERE Place = 1
-ORDER BY Region
+WHERE PLACE = 1
+ORDER BY REGION
 ```
 
 ```
 +---------+---------+---------+
-| Region  | Product | Sales   |
+| REGION  | PRODUCT | SALES   |
 +---------+---------+---------+
 | Central | 300-30  | 17885.0 |
 | East    | 100-10  | 23205.0 |
@@ -184,19 +184,19 @@ ORDER BY Region
 Scenarios side by side, the way a report wants them, by turning rows into columns with conditional sums.
 
 ```
-SELECT Market,
-       SUM(CASE WHEN Scenario = 'Actual' THEN VALUE END) AS Actual,
-       SUM(CASE WHEN Scenario = 'Budget' THEN VALUE END) AS Budget
+SELECT MARKET,
+       SUM(CASE WHEN SCENARIO = 'Actual' THEN VALUE END) AS ACTUAL,
+       SUM(CASE WHEN SCENARIO = 'Budget' THEN VALUE END) AS BUDGET
 FROM Sample.Basic.CELLS
-WHERE Year = 'Year' AND Measures = 'Sales' AND Product = 'Product'
-  AND IS_CHILD(Market, 'Market')
-GROUP BY Market
-ORDER BY Market
+WHERE YEAR = 'Year' AND MEASURES = 'Sales' AND PRODUCT = 'Product'
+  AND IS_CHILD(MARKET, 'Market')
+GROUP BY MARKET
+ORDER BY MARKET
 ```
 
 ```
 +---------+----------+----------+
-| Market  | Actual   | Budget   |
+| MARKET  | ACTUAL   | BUDGET   |
 +---------+----------+----------+
 | Central | 129680.0 | 125180.0 |
 | East    | 87398.0  | 78950.0  |

@@ -8,7 +8,7 @@ import static com.jasonwjones.hyperion.vess.schema.Column.VARIABLE_VALUE;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -108,15 +108,35 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 	}
 
 	/**
-	 * The name of a dimension's table: the dimension's own, unless the cube
-	 * already has a table by that name.
+	 * The name of a dimension's table: DIM_PRODUCT for Product, by default, or
+	 * as the connection's naming says, with a suffix where that would take the
+	 * name of one of the cube's own tables or another dimension's.
 	 */
 	synchronized String dimensionTable(Dimension dimension) {
 		if (dimensionTableNames == null) {
-			dimensionTableNames = new HashMap<>();
+			Outline outline;
+			try {
+				outline = context.outline(application, cube);
+			} catch (VessException e) {
+				throw new VessException.Unchecked(e);
+			}
+			dimensionTableNames = dimensionTables(outline, context.getSettings().naming());
 		}
-		return dimensionTableNames.computeIfAbsent(dimension.getName(),
-				name -> TABLES.contains(name.toUpperCase(Locale.ROOT)) ? name + " Dimension" : name);
+		String name = dimensionTableNames.get(dimension.getName());
+		return name != null ? name : context.getSettings().naming().dimensionTable(dimension.getName());
+	}
+
+	/**
+	 * The names of every dimension's table, in outline order, so that which
+	 * one gets a suffix doesn't depend on which is asked for first.
+	 */
+	public static Map<String, String> dimensionTables(Outline outline, Naming naming) {
+		Set<String> taken = new HashSet<>(TABLES);
+		Map<String, String> names = new LinkedHashMap<>();
+		for (Dimension dimension : outline.getDimensions()) {
+			names.put(dimension.getName(), naming.unique(taken, naming.dimensionPrefix() + dimension.getName(), "Dimension"));
+		}
+		return names;
 	}
 
 	@Override
@@ -130,12 +150,13 @@ public final class CubeSchema extends AbstractSchema implements VessSchema {
 			}
 			List<VessTable> list = new ArrayList<>();
 			CellSource cells = CellSource.of(context, application, cube);
-			list.add(new CellsTable("CELLS", cells, application, cube, false, this::dimensionTable));
-			list.add(new CellsTable("FACTS", cells, application, cube, true, this::dimensionTable));
+			Naming naming = context.getSettings().naming();
+			list.add(new CellsTable("CELLS", cells, application, cube, false, this::dimensionTable, naming));
+			list.add(new CellsTable("FACTS", cells, application, cube, true, this::dimensionTable, naming));
 			list.addAll(fixedTables());
 			for (Dimension dimension : outline.getDimensions()) {
 				list.add(new DimensionTable(dimensionTable(dimension), () -> context.outline(application, cube), application, cube, dimension,
-						this::dimensionTable));
+						this::dimensionTable, naming));
 			}
 			tables = list;
 		}

@@ -93,10 +93,12 @@ public final class ServerContext {
 	 *            tables
 	 * @param browseStopped whether browsing lists the tables of a stopped
 	 *            application's cubes that need its outline, which starts it
+	 * @param naming how names from Essbase become names of tables and columns
 	 */
-	public record Settings(Duration outlineCache, long chunkCells, int chunkMembers, String serverCatalog, boolean browseStopped) {
+	public record Settings(Duration outlineCache, long chunkCells, int chunkMembers, String serverCatalog, boolean browseStopped,
+			Naming naming) {
 
-		public static final Settings DEFAULTS = new Settings(Duration.ofMinutes(5), 500_000, 2_000, "ESSBASE", false);
+		public static final Settings DEFAULTS = new Settings(Duration.ofMinutes(5), 500_000, 2_000, "ESSBASE", false, Naming.DEFAULTS);
 
 	}
 

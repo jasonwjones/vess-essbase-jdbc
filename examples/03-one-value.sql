@@ -5,4 +5,4 @@ CELLS holds every value in the cube, with a column for each dimension. Name a me
 */
 SELECT VALUE
 FROM Sample.Basic.CELLS
-WHERE Year = 'Jan' AND Measures = 'Sales' AND Product = '100-10' AND Market = 'New York' AND Scenario = 'Actual'
+WHERE YEAR = 'Jan' AND MEASURES = 'Sales' AND PRODUCT = '100-10' AND MARKET = 'New York' AND SCENARIO = 'Actual'

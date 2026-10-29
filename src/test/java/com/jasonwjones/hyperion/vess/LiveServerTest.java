@@ -106,7 +106,7 @@ public class LiveServerTest {
 				keys.add(results.getString("FKCOLUMN_NAME") + "->" + results.getString("PKTABLE_NAME"));
 			}
 		}
-		assertTrue(keys.contains("Product->Product"), keys.toString());
+		assertTrue(keys.contains("PRODUCT->DIM_PRODUCT"), keys.toString());
 		assertTrue(connection.isValid(5));
 	}
 
@@ -119,8 +119,8 @@ public class LiveServerTest {
 
 	@Test
 	public void readsTheOutline() throws SQLException {
-		assertEquals(List.of(List.of("100", "Colas")), query("select PARENT, MEMBER_ALIAS(PARENT) from Product where NAME = ?", "100-10"));
-		assertEquals(List.of(List.of(13L)), query("select count(*) from Product where LEVEL = 0"));
+		assertEquals(List.of(List.of("100", "Colas")), query("select PARENT, MEMBER_ALIAS(PARENT) from DIM_PRODUCT where NAME = ?", "100-10"));
+		assertEquals(List.of(List.of(13L)), query("select count(*) from DIM_PRODUCT where LEVEL = 0"));
 	}
 
 	@Test

@@ -54,4 +54,12 @@ class VessUrlTest {
 		assertThrows(VessException.class, () -> VessConnection.contextSettings(Map.of("chunk.members", "0")));
 	}
 
+	@Test
+	void readsNamingSettings() throws VessException {
+		assertEquals(com.jasonwjones.hyperion.vess.schema.Naming.DEFAULTS, VessConnection.contextSettings(Map.of()).naming());
+		ServerContext.Settings asIs = VessConnection.contextSettings(Map.of("dimension.names", "as-is", "dimension.prefix", ""));
+		assertEquals("Pkg Type", asIs.naming().dimensionTable("Pkg Type"));
+		assertThrows(VessException.class, () -> VessConnection.contextSettings(Map.of("dimension.names", "title")));
+	}
+
 }

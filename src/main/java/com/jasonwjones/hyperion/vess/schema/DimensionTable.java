@@ -43,6 +43,8 @@ public final class DimensionTable extends VessTable {
 
 	private final Function<Dimension, String> dimensionTables;
 
+	private final Naming naming;
+
 	private List<Column> columns;
 
 	/** What each column holds, in order */
@@ -51,13 +53,14 @@ public final class DimensionTable extends VessTable {
 	private List<ForeignKey> foreignKeys;
 
 	public DimensionTable(String name, OutlineSource source, String application, String cube, Dimension dimension,
-			Function<Dimension, String> dimensionTables) {
+			Function<Dimension, String> dimensionTables, Naming naming) {
 		super(name, remarks(dimension));
 		this.source = source;
 		this.application = application;
 		this.cube = cube;
 		this.dimensionName = dimension.getName();
 		this.dimensionTables = dimensionTables;
+		this.naming = naming;
 	}
 
 	private static String remarks(Dimension dimension) {
@@ -120,7 +123,7 @@ public final class DimensionTable extends VessTable {
 		int generations = dimension.getGenerations();
 		for (int generation = 2; generation <= generations; generation++) {
 			String named = dimension.getGenerationName(generation);
-			String columnName = unique(taken, named != null ? named : "GEN" + generation, " Generation");
+			String columnName = naming.unique(taken, named != null ? named : "GEN" + generation, "Generation");
 			int number = generation;
 			add(list, getters, taken, Column.text(columnName, MEMBER_NAME).remarks("The member's ancestor at generation " + generation
 					+ (named != null ? " (" + named + ")" : "") + ", or the member itself if it's there"), member -> {
@@ -134,7 +137,7 @@ public final class DimensionTable extends VessTable {
 			if (table.equals(defaultTable)) {
 				continue;
 			}
-			String columnName = unique(taken, table, " Alias");
+			String columnName = naming.unique(taken, table, "Alias");
 			add(list, getters, taken, Column.text(columnName, MEMBER_NAME).remarks("The alias in the " + table + " alias table"),
 					member -> member.getAlias(table));
 		}
@@ -145,7 +148,7 @@ public final class DimensionTable extends VessTable {
 			if (attribute == null) {
 				continue;
 			}
-			String columnName = unique(taken, attributeName, " Attribute");
+			String columnName = naming.unique(taken, attributeName, "Attribute");
 			Column column;
 			Function<String, Object> convert;
 			switch (String.valueOf(attribute.getAttributeType())) {
@@ -183,21 +186,6 @@ public final class DimensionTable extends VessTable {
 		taken.add(column.getName().toUpperCase(Locale.ROOT));
 		list.add(column);
 		getters.add(getter);
-	}
-
-	/**
-	 * A column name not already taken, with a suffix added if it is.
-	 */
-	private static String unique(Set<String> taken, String name, String suffix) {
-		String candidate = name;
-		if (taken.contains(candidate.toUpperCase(Locale.ROOT))) {
-			candidate = name + suffix;
-		}
-		int counter = 2;
-		while (taken.contains(candidate.toUpperCase(Locale.ROOT))) {
-			candidate = name + suffix + " " + counter++;
-		}
-		return candidate;
 	}
 
 	static Double number(String text) {

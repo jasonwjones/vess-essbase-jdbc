@@ -1,5 +1,5 @@
 +----------+-------------+----------+
-| Category | Caffeinated | Sales    |
+| CATEGORY | CAFFEINATED | SALES    |
 +----------+-------------+----------+
 | 100      | false       | 12841.0  |
 | 100      | true        | 93293.0  |
